@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  SafeTone
 //
-//  Native-style tab bar: Favorites, Recents, Contacts, Keypad, Voicemail.
+//  Native iOS 26 Phone layout: TabView with Liquid Glass tab bar.
 //
 
 import SwiftUI
@@ -48,7 +48,9 @@ struct ContentView: View {
                 }
                 .tag(4)
         }
-        .tint(Color(hex: "0A84FF"))
+        .tint(Color.safeTonePureWhite)
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .tabBarMinimizeBehavior(.onScrollDown)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showLiveCall) {
             LiveCallMockup()

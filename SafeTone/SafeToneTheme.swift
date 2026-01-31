@@ -7,8 +7,12 @@
 
 import SwiftUI
 
-// MARK: - Colors
+// MARK: - Colors (iOS 26 Phone-style: Solid Deep Blue + Pure White)
 extension Color {
+    /// Global background — Solid Deep Blue (not Navy).
+    static let safeToneDeepBlue = Color(hex: "0A1628")
+    /// High-contrast foreground for text, icons, labels.
+    static let safeTonePureWhite = Color.white
     static let safeToneNavy = Color(hex: "1A237E")
     static let safeToneNavyLight = Color(hex: "283593")
     static let safeToneNavySoft = Color(hex: "3949AB")
