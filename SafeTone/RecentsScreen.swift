@@ -2,74 +2,79 @@
 //  RecentsScreen.swift
 //  SafeTone
 //
-//  Native Phone-style Recents list. Black background, 17pt SF Pro body.
+//  Native iOS 26 Phone layout: Name (Large Bold), Subtitle (Call Type), Timestamp (leading). Missed = red.
 //
 
 import SwiftUI
 
 struct RecentItem: Identifiable {
     let id = UUID()
-    let label: String
-    let detail: String
+    let name: String
+    let callType: String
+    let timestamp: String
+    let isMissed: Bool
     let isVerified: Bool
 }
 
 private let mockRecents: [RecentItem] = [
-    RecentItem(label: "+1 (555) 123-4567", detail: "Today, 2:34 PM", isVerified: true),
-    RecentItem(label: "Alice Chen", detail: "Yesterday", isVerified: true),
-    RecentItem(label: "Unknown", detail: "Yesterday", isVerified: false),
-    RecentItem(label: "+1 (555) 987-6543", detail: "Mon", isVerified: false),
+    RecentItem(name: "+1 (555) 123-4567", callType: "iPhone", timestamp: "Today, 2:34 PM", isMissed: false, isVerified: true),
+    RecentItem(name: "Alice Chen", callType: "mobile", timestamp: "Yesterday", isMissed: false, isVerified: true),
+    RecentItem(name: "Unknown", callType: "mobile", timestamp: "Yesterday", isMissed: true, isVerified: false),
+    RecentItem(name: "+1 (555) 987-6543", callType: "iPhone", timestamp: "Mon", isMissed: true, isVerified: false),
 ]
 
 struct RecentsScreen: View {
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.safeToneDeepBlue.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Recents")
                     .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.safeTonePureWhite)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(mockRecents) { item in
-                            Button {
-                                // Mock tap
-                            } label: {
-                                HStack(spacing: 16) {
-                                    Image(systemName: item.isVerified ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
-                                        .font(.system(size: 22))
-                                        .foregroundStyle(item.isVerified ? Color.green : Color.red)
-                                        .frame(width: 44, height: 44)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(item.label)
-                                            .font(.system(size: 17, weight: .regular))
-                                            .foregroundStyle(.white)
-                                        Text(item.detail)
-                                            .font(.system(size: 17, weight: .regular))
-                                            .foregroundStyle(Color(UIColor.systemGray))
-                                    }
-                                    Spacer()
-                                    Image(systemName: "phone.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(Color.green)
-                                        .frame(minWidth: 60, minHeight: 60)
-                                        .contentShape(Rectangle())
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 20)
-                                .frame(minHeight: 60)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                        }
+                List {
+                    ForEach(mockRecents) { item in
+                        recentRow(item)
+                            .listRowBackground(Color.safeToneDeepBlue)
+                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     }
-                    .padding(.bottom, 24)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
+    }
+
+    private func recentRow(_ item: RecentItem) -> some View {
+        Button {
+            // Mock tap
+        } label: {
+            HStack(alignment: .top, spacing: 16) {
+                Text(item.timestamp)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color.safeTonePureWhite.opacity(0.7))
+                    .frame(width: 80, alignment: .leading)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.name)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(item.isMissed ? Color.red : Color.safeTonePureWhite)
+                    Text(item.callType)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                }
+                Spacer()
+                Image(systemName: "phone.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Color.safeToneEmerald)
+                    .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
+                    .contentShape(Rectangle())
+            }
+            .frame(minHeight: kMinTouchTarget)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

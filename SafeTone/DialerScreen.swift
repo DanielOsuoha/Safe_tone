@@ -2,7 +2,7 @@
 //  DialerScreen.swift
 //  SafeTone
 //
-//  Native Phone-style keypad: black background, circular buttons, digit + letter labels.
+//  Native iOS 26 keypad: Light Blue/White frosted glass circles, 3×4 grid, Emerald call button.
 //
 
 import SwiftUI
@@ -34,24 +34,22 @@ struct DialerScreen: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.safeToneDeepBlue.ignoresSafeArea()
             VStack(spacing: 0) {
                 Spacer().frame(height: 16)
-                // Number display + Shield icon
                 HStack(spacing: 8) {
                     Image(systemName: "shield.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.safeTonePureWhite)
                     Text(enteredNumber.isEmpty ? " " : enteredNumber)
                         .font(.system(size: 34, weight: .light))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.safeTonePureWhite)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                 }
                 .padding(.horizontal, 24)
                 .frame(minHeight: 44)
                 Spacer().frame(height: 24)
-                // 3-column keypad (native-style spacing)
                 VStack(spacing: 18) {
                     ForEach(Array(keypadRows.enumerated()), id: \.offset) { _, row in
                         HStack(spacing: 18) {
@@ -63,7 +61,6 @@ struct DialerScreen: View {
                 }
                 .padding(.horizontal, 32)
                 Spacer().frame(height: 20)
-                // Call button
                 callButton
                 Spacer().frame(height: 40)
             }
@@ -77,17 +74,17 @@ struct DialerScreen: View {
             VStack(spacing: 2) {
                 Text(key.digit)
                     .font(.system(size: 36, weight: .light))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.safeTonePureWhite)
                 if let letters = key.letters {
                     Text(letters)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(Color(UIColor.systemGray))
+                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
                 }
             }
             .frame(width: 78, height: 78)
             .contentShape(Circle())
         }
-        .buttonStyle(DialKeyButtonStyle())
+        .buttonStyle(FrostedDialKeyButtonStyle())
     }
 
     private var callButton: some View {
@@ -96,35 +93,45 @@ struct DialerScreen: View {
         } label: {
             Image(systemName: "phone.fill")
                 .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.safeTonePureWhite)
                 .frame(width: 78, height: 78)
                 .contentShape(Circle())
         }
-        .buttonStyle(CallKeyButtonStyle())
+        .buttonStyle(EmeraldCallKeyButtonStyle())
     }
 }
 
-// MARK: - Dial key (systemGray6 circle, no flicker)
-struct DialKeyButtonStyle: ButtonStyle {
+// MARK: - Frosted glass dial key (Light Blue/White refraction, 60pt+ touch)
+struct FrostedDialKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
-                Circle()
-                    .fill(Color(UIColor.systemGray6))
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.35),
+                                    Color.white.opacity(0.12)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
             )
             .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
-// MARK: - Call key (green circle)
-struct CallKeyButtonStyle: ButtonStyle {
+// MARK: - Large Emerald Green call button
+struct EmeraldCallKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(
-                Circle()
-                    .fill(Color.green)
-            )
+            .background(Circle().fill(Color.safeToneEmerald))
             .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
