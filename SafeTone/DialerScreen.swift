@@ -2,110 +2,131 @@
 //  DialerScreen.swift
 //  SafeTone
 //
-//  3x4 glass-morphic keypad with Emerald Call button.
+//  Native Phone-style keypad: black background, circular buttons, digit + letter labels.
 //
 
 import SwiftUI
 
+private struct DialKey: Identifiable {
+    let id: String
+    let digit: String
+    let letters: String?
+}
+
+private let keypadRows: [[DialKey]] = [
+    [DialKey(id: "1", digit: "1", letters: nil),
+     DialKey(id: "2", digit: "2", letters: "ABC"),
+     DialKey(id: "3", digit: "3", letters: "DEF")],
+    [DialKey(id: "4", digit: "4", letters: "GHI"),
+     DialKey(id: "5", digit: "5", letters: "JKL"),
+     DialKey(id: "6", digit: "6", letters: "MNO")],
+    [DialKey(id: "7", digit: "7", letters: "PQRS"),
+     DialKey(id: "8", digit: "8", letters: "TUV"),
+     DialKey(id: "9", digit: "9", letters: "WXYZ")],
+    [DialKey(id: "*", digit: "*", letters: nil),
+     DialKey(id: "0", digit: "0", letters: "+"),
+     DialKey(id: "#", digit: "#", letters: nil)],
+]
+
 struct DialerScreen: View {
     var onCallTapped: (() -> Void)?
     @State private var enteredNumber: String = ""
-    @State private var callPulse = false
-
-    private let digits: [[String]] = [
-        ["1", "2", "3"],
-        ["4", "5", "6"],
-        ["7", "8", "9"],
-        ["*", "0", "#"]
-    ]
 
     var body: some View {
         ZStack {
-            Color.safeToneNavy.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             VStack(spacing: 0) {
+                Spacer().frame(height: 16)
+                // Number display + Shield icon
+                HStack(spacing: 8) {
+                    Image(systemName: "shield.fill")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(.white)
+                    Text(enteredNumber.isEmpty ? " " : enteredNumber)
+                        .font(.system(size: 34, weight: .light))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 24)
+                .frame(minHeight: 44)
                 Spacer().frame(height: 24)
-                // Display
-                Text(enteredNumber.isEmpty ? " " : enteredNumber)
-                    .font(SafeToneFonts.title2)
-                    .foregroundStyle(Color.safeToneTextPrimary)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 44)
-                    .padding(.horizontal, 24)
-                Spacer().frame(height: 32)
-                // 3x4 grid
-                VStack(spacing: 20) {
-                    ForEach(0..<4, id: \.self) { row in
-                        HStack(spacing: 20) {
-                            ForEach(0..<3, id: \.self) { col in
-                                let label = digits[row][col]
-                                dialButton(label: label)
+                // 3-column keypad (native-style spacing)
+                VStack(spacing: 18) {
+                    ForEach(Array(keypadRows.enumerated()), id: \.offset) { _, row in
+                        HStack(spacing: 18) {
+                            ForEach(row) { key in
+                                dialButton(key: key)
                             }
                         }
                     }
                 }
                 .padding(.horizontal, 32)
-                Spacer().frame(height: 28)
-                // Call button (Emerald, pulse)
+                Spacer().frame(height: 20)
+                // Call button
                 callButton
                 Spacer().frame(height: 40)
             }
         }
     }
 
-    private func dialButton(label: String) -> some View {
+    private func dialButton(key: DialKey) -> some View {
         Button {
-            enteredNumber += label
+            enteredNumber += key.digit
         } label: {
-            Text(label)
-                .font(SafeToneFonts.dialDigit)
-                .foregroundStyle(Color.safeToneTextPrimary)
-                .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
+            VStack(spacing: 2) {
+                Text(key.digit)
+                    .font(.system(size: 36, weight: .light))
+                    .foregroundStyle(.white)
+                if let letters = key.letters {
+                    Text(letters)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(Color(UIColor.systemGray))
+                }
+            }
+            .frame(width: 78, height: 78)
+            .contentShape(Circle())
         }
-        .buttonStyle(.plain)
-        .glassDroplet()
+        .buttonStyle(DialKeyButtonStyle())
     }
 
     private var callButton: some View {
         Button {
             onCallTapped?()
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "phone.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                Text("Call")
-                    .font(SafeToneFonts.bodyBold)
-            }
-            .foregroundStyle(Color.safeToneNavy)
-            .frame(minWidth: max(60, 200), minHeight: kMinTouchTarget)
-            .padding(.horizontal, 48)
-            .contentShape(Rectangle())
+            Image(systemName: "phone.fill")
+                .font(.system(size: 28, weight: .medium))
+                .foregroundStyle(.white)
+                .frame(width: 78, height: 78)
+                .contentShape(Circle())
         }
-        .buttonStyle(.plain)
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(Color.safeToneEmerald)
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.safeToneEmeraldBright.opacity(0.5), Color.safeToneEmerald],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                RoundedRectangle(cornerRadius: 28)
-                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
-            }
-            .shadow(color: Color.safeToneEmerald.opacity(0.5), radius: callPulse ? 16 : 10)
-            .scaleEffect(callPulse ? 1.02 : 1.0)
-        )
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                callPulse = true
-            }
-        }
+        .buttonStyle(CallKeyButtonStyle())
+    }
+}
+
+// MARK: - Dial key (systemGray6 circle, no flicker)
+struct DialKeyButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Circle()
+                    .fill(Color(UIColor.systemGray6))
+            )
+            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Call key (green circle)
+struct CallKeyButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Circle()
+                    .fill(Color.green)
+            )
+            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 

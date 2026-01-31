@@ -2,54 +2,61 @@
 //  ContentView.swift
 //  SafeTone
 //
-//  Root: dynamic tab bar (Recents, Contacts, Keypad, Shield) and tab content.
+//  Native-style tab bar: Favorites, Recents, Contacts, Keypad, Voicemail.
 //
 
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab: MainTab = .recents
-    @State private var tabBarExpanded: Bool = true
-    @State private var scrollOffset: CGFloat = 0
+    @State private var selectedTab: Int = 3 // Keypad
     @State private var showLiveCall: Bool = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Color.safeToneNavy.ignoresSafeArea()
-
-            Group {
-                switch selectedTab {
-                case .recents:
-                    RecentsScreen(onScrollOffset: { scrollOffset = $0 })
-                case .contacts:
-                    ContactsScreen(onScrollOffset: { scrollOffset = $0 })
-                case .keypad:
-                    DialerScreenWrapper(onCallTapped: { showLiveCall = true })
-                case .shield:
-                    ShieldSettings(onScrollOffset: { scrollOffset = $0 })
+        TabView(selection: $selectedTab) {
+            FavoritesScreen()
+                .tabItem {
+                    Image(systemName: "star.fill")
+                    Text("Favorites")
                 }
-            }
-            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                .tag(0)
 
-            DynamicTabBar(selectedTab: $selectedTab, expanded: tabBarExpanded) { tab in
-                selectedTab = tab
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    tabBarExpanded = true
+            RecentsScreen()
+                .tabItem {
+                    Image(systemName: "clock.fill")
+                    Text("Recents")
                 }
-            }
+                .tag(1)
+
+            ContactsScreen()
+                .tabItem {
+                    Image(systemName: "person.circle.fill")
+                    Text("Contacts")
+                }
+                .tag(2)
+
+            DialerTabView(onCallTapped: { showLiveCall = true })
+                .tabItem {
+                    Image(systemName: "circle.grid.3x3.fill")
+                    Text("Keypad")
+                }
+                .tag(3)
+
+            VoicemailScreen()
+                .tabItem {
+                    Image(systemName: "recordingtape")
+                    Text("Voicemail")
+                }
+                .tag(4)
         }
-        .onChange(of: scrollOffset) { _, newValue in
-            withAnimation(.easeOut(duration: 0.25)) {
-                tabBarExpanded = newValue > 10
-            }
-        }
+        .tint(Color(hex: "0A84FF"))
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $showLiveCall) {
             LiveCallMockup()
         }
     }
 }
 
-struct DialerScreenWrapper: View {
+struct DialerTabView: View {
     var onCallTapped: () -> Void
 
     var body: some View {

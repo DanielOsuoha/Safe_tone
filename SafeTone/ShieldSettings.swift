@@ -2,23 +2,22 @@
 //  ShieldSettings.swift
 //  SafeTone
 //
-//  Dashboard with System Guard toggle and high-visibility status cards.
+//  Dashboard with System Guard toggle. Black background, system typography.
 //
 
 import SwiftUI
 
 struct ShieldSettings: View {
-    var onScrollOffset: ((CGFloat) -> Void)?
     @State private var systemGuardActive: Bool = true
 
     var body: some View {
         ZStack {
-            Color.safeToneNavy.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 24) {
                     Text("Shield")
-                        .font(SafeToneFonts.largeTitle)
-                        .foregroundStyle(Color.safeToneTextPrimary)
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 20)
                         .padding(.bottom, 8)
@@ -27,37 +26,24 @@ struct ShieldSettings: View {
                         title: "Call Verification",
                         subtitle: "Verified calls show a green shield.",
                         icon: "checkmark.shield.fill",
-                        color: Color.safeToneVerifiedGreen
+                        color: Color.green
                     )
                     statusCard(
                         title: "Scam Warnings",
                         subtitle: "Suspected scams show a red warning.",
                         icon: "exclamationmark.shield.fill",
-                        color: Color.safeToneScamRed
+                        color: Color.red
                     )
                     statusCard(
                         title: "Block List",
                         subtitle: "Blocked numbers never ring.",
                         icon: "hand.raised.fill",
-                        color: Color.safeToneNavySoft
+                        color: Color(UIColor.systemGray2)
                     )
                     Spacer().frame(height: 40)
                 }
                 .padding(.horizontal, 20)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .preference(
-                                key: ScrollOffsetPreferenceKey.self,
-                                value: geo.frame(in: .named("scroll")).minY
-                            )
-                    }
-                )
-                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                    onScrollOffset?(value)
-                }
             }
-            .coordinateSpace(name: "scroll")
         }
     }
 
@@ -65,37 +51,33 @@ struct ShieldSettings: View {
         VStack(spacing: 20) {
             HStack {
                 Image(systemName: "shield.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(systemGuardActive ? Color.safeToneVerifiedGreen : Color.safeToneTextSecondary)
+                    .font(.system(size: 28))
+                    .foregroundStyle(systemGuardActive ? Color.green : Color(UIColor.systemGray))
                 Text("System Guard")
-                    .font(SafeToneFonts.title2)
-                    .foregroundStyle(Color.safeToneTextPrimary)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
                 Spacer()
             }
             Text("Protect your calls with real-time verification.")
-                .font(SafeToneFonts.body)
-                .foregroundStyle(Color.safeToneTextSecondary)
+                .font(.system(size: 17, weight: .regular))
+                .foregroundStyle(Color(UIColor.systemGray))
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack {
                 Text("Active")
-                    .font(SafeToneFonts.bodyBold)
-                    .foregroundStyle(Color.safeToneTextPrimary)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.white)
                 Spacer()
                 Toggle("", isOn: $systemGuardActive)
                     .labelsHidden()
-                    .tint(Color.safeToneEmerald)
-                    .frame(minWidth: 60, minHeight: kMinTouchTarget)
+                    .tint(Color.green)
+                    .frame(minWidth: 60, minHeight: 60)
             }
         }
         .padding(24)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.safeToneGlassWhite.opacity(0.2))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.safeToneGlassHighlight.opacity(0.4), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.systemGray6).opacity(0.3))
         )
     }
 
@@ -107,23 +89,19 @@ struct ShieldSettings: View {
                 .frame(width: 52, height: 52)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(SafeToneFonts.bodyBold)
-                    .foregroundStyle(Color.safeToneTextPrimary)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.white)
                 Text(subtitle)
-                    .font(SafeToneFonts.body)
-                    .foregroundStyle(Color.safeToneTextSecondary)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color(UIColor.systemGray))
             }
             Spacer()
         }
         .padding(20)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.safeToneGlassWhite.opacity(0.15))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.safeToneGlassHighlight.opacity(0.3), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.systemGray6).opacity(0.3))
         )
     }
 }

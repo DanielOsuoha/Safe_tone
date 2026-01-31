@@ -1,32 +1,30 @@
 //
-//  RecentsScreen.swift
+//  VoicemailScreen.swift
 //  SafeTone
 //
-//  Native Phone-style Recents list. Black background, 17pt SF Pro body.
+//  Native Phone-style Voicemail list. Black background, 17pt body.
 //
 
 import SwiftUI
 
-struct RecentItem: Identifiable {
+struct VoicemailItem: Identifiable {
     let id = UUID()
-    let label: String
+    let name: String
     let detail: String
-    let isVerified: Bool
+    let duration: String
 }
 
-private let mockRecents: [RecentItem] = [
-    RecentItem(label: "+1 (555) 123-4567", detail: "Today, 2:34 PM", isVerified: true),
-    RecentItem(label: "Alice Chen", detail: "Yesterday", isVerified: true),
-    RecentItem(label: "Unknown", detail: "Yesterday", isVerified: false),
-    RecentItem(label: "+1 (555) 987-6543", detail: "Mon", isVerified: false),
+private let mockVoicemails: [VoicemailItem] = [
+    VoicemailItem(name: "Alice Chen", detail: "Today, 2:34 PM", duration: "0:45"),
+    VoicemailItem(name: "Unknown", detail: "Yesterday", duration: "1:20"),
 ]
 
-struct RecentsScreen: View {
+struct VoicemailScreen: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             VStack(spacing: 0) {
-                Text("Recents")
+                Text("Voicemail")
                     .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -34,17 +32,21 @@ struct RecentsScreen: View {
                     .padding(.bottom, 16)
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(mockRecents) { item in
+                        ForEach(mockVoicemails) { item in
                             Button {
                                 // Mock tap
                             } label: {
                                 HStack(spacing: 16) {
-                                    Image(systemName: item.isVerified ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
-                                        .font(.system(size: 22))
-                                        .foregroundStyle(item.isVerified ? Color.green : Color.red)
-                                        .frame(width: 44, height: 44)
+                                    Circle()
+                                        .fill(Color(UIColor.systemGray4))
+                                        .frame(width: 48, height: 48)
+                                        .overlay(
+                                            Text(String(item.name.prefix(1)))
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundStyle(.white)
+                                        )
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(item.label)
+                                        Text(item.name)
                                             .font(.system(size: 17, weight: .regular))
                                             .foregroundStyle(.white)
                                         Text(item.detail)
@@ -52,11 +54,12 @@ struct RecentsScreen: View {
                                             .foregroundStyle(Color(UIColor.systemGray))
                                     }
                                     Spacer()
-                                    Image(systemName: "phone.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(Color.green)
-                                        .frame(minWidth: 60, minHeight: 60)
-                                        .contentShape(Rectangle())
+                                    Text(item.duration)
+                                        .font(.system(size: 17, weight: .regular))
+                                        .foregroundStyle(Color(UIColor.systemGray))
+                                    Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundStyle(.white)
                                 }
                                 .padding(.vertical, 12)
                                 .padding(.horizontal, 20)
@@ -74,5 +77,5 @@ struct RecentsScreen: View {
 }
 
 #Preview {
-    RecentsScreen()
+    VoicemailScreen()
 }

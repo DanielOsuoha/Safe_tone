@@ -2,7 +2,7 @@
 //  ContactsScreen.swift
 //  SafeTone
 //
-//  High-contrast list with large avatars.
+//  Native Phone-style Contacts list. Black background, 17pt SF Pro body.
 //
 
 import SwiftUI
@@ -23,85 +23,56 @@ private let mockContacts: [ContactRow] = [
 ]
 
 struct ContactsScreen: View {
-    var onScrollOffset: ((CGFloat) -> Void)?
-
     var body: some View {
         ZStack {
-            Color.safeToneNavy.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Contacts")
-                    .font(SafeToneFonts.largeTitle)
-                    .foregroundStyle(Color.safeToneTextPrimary)
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 0) {
                         ForEach(mockContacts) { contact in
-                            contactRow(contact)
+                            Button {
+                                // Mock tap
+                            } label: {
+                                HStack(spacing: 16) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(UIColor.systemGray4))
+                                            .frame(width: 48, height: 48)
+                                        Text(contact.initials)
+                                            .font(.system(size: 17, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                    }
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(contact.name)
+                                            .font(.system(size: 17, weight: .regular))
+                                            .foregroundStyle(.white)
+                                        Text(contact.subtitle)
+                                            .font(.system(size: 17, weight: .regular))
+                                            .foregroundStyle(Color(UIColor.systemGray))
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(Color(UIColor.systemGray3))
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 20)
+                                .frame(minHeight: 60)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
-                    .padding(.horizontal, 20)
                     .padding(.bottom, 24)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear
-                                .preference(
-                                    key: ScrollOffsetPreferenceKey.self,
-                                    value: geo.frame(in: .named("scroll")).minY
-                                )
-                        }
-                    )
-                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                        onScrollOffset?(value)
-                    }
                 }
-                .coordinateSpace(name: "scroll")
             }
         }
-    }
-
-    private func contactRow(_ contact: ContactRow) -> some View {
-        Button {
-            // Mock tap
-        } label: {
-            HStack(spacing: 16) {
-                // Large avatar (60pt min for touch; visual circle larger)
-                ZStack {
-                    Circle()
-                        .fill(Color.safeToneNavySoft)
-                        .frame(width: 64, height: 64)
-                    Text(contact.initials)
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(Color.safeToneTextPrimary)
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(contact.name)
-                        .font(SafeToneFonts.bodyBold)
-                        .foregroundStyle(Color.safeToneTextPrimary)
-                    Text(contact.subtitle)
-                        .font(SafeToneFonts.body)
-                        .foregroundStyle(Color.safeToneTextSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color.safeToneTextSecondary)
-            }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .frame(minHeight: kMinTouchTarget)
-            .contentShape(Rectangle())
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.safeToneGlassWhite.opacity(0.15))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.safeToneGlassHighlight.opacity(0.3), lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(.plain)
     }
 }
 

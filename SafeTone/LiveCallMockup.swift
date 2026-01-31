@@ -12,49 +12,44 @@ struct LiveCallMockup: View {
 
     var body: some View {
         ZStack {
-            Color.safeToneNavy.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             VStack(spacing: 0) {
-                // Toggle: Verified (green) vs Scam Warning (red)
                 HStack(spacing: 16) {
                     Text("Verified")
-                        .font(SafeToneFonts.bodyBold)
-                        .foregroundStyle(isVerified ? Color.safeToneVerifiedGreen : Color.safeToneTextSecondary)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(isVerified ? Color.green : Color(UIColor.systemGray))
                     Toggle("", isOn: $isVerified)
                         .labelsHidden()
-                        .tint(Color.safeToneEmerald)
-                        .frame(width: 60, height: kMinTouchTarget)
+                        .tint(Color.green)
+                        .frame(width: 60, height: 60)
                     Text("Scam Warning")
-                        .font(SafeToneFonts.bodyBold)
-                        .foregroundStyle(!isVerified ? Color.safeToneScamRed : Color.safeToneTextSecondary)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(!isVerified ? Color.red : Color(UIColor.systemGray))
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
                 Spacer().frame(height: 40)
-                // Caller label
                 Text("+1 (555) 123-4567")
-                    .font(SafeToneFonts.title2)
-                    .foregroundStyle(Color.safeToneTextPrimary)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
                 Text("In Call")
-                    .font(SafeToneFonts.body)
-                    .foregroundStyle(Color.safeToneTextSecondary)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color(UIColor.systemGray))
                     .padding(.top, 4)
                 Spacer().frame(height: 48)
-                // Large Security Shield
                 shieldGraphic
                 Spacer().frame(height: 48)
-                // End call button
                 Button {
                     // Mock only
                 } label: {
                     Image(systemName: "phone.down.fill")
                         .font(.system(size: 24))
                         .foregroundStyle(.white)
-                        .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
                         .frame(width: 72, height: 72)
-                        .background(Circle().fill(Color.safeToneScamRed))
-                        .contentShape(Rectangle())
+                        .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
+                .background(Circle().fill(Color.red))
                 Spacer().frame(height: 60)
             }
         }
@@ -62,12 +57,10 @@ struct LiveCallMockup: View {
 
     private var shieldGraphic: some View {
         ZStack {
-            // Glow
             RoundedRectangle(cornerRadius: 48)
                 .fill(accentColor.opacity(0.2))
                 .frame(width: 200, height: 200)
                 .blur(radius: 30)
-            // Shield shape (SF Symbol scaled)
             Image(systemName: "shield.fill")
                 .font(.system(size: 120))
                 .foregroundStyle(
@@ -88,7 +81,7 @@ struct LiveCallMockup: View {
     }
 
     private var accentColor: Color {
-        isVerified ? Color.safeToneVerifiedGreen : Color.safeToneScamRed
+        isVerified ? Color.green : Color.red
     }
 }
 
