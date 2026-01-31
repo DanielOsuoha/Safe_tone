@@ -2,7 +2,7 @@
 //  ContactsScreen.swift
 //  SafeTone
 //
-//  Native iOS 26 Phone layout: List + searchable + alphabetical scroll index.
+//  Native iPhone Contacts: List with A–Z scroller on the right, native Section headers.
 //
 
 import SwiftUI
@@ -48,11 +48,11 @@ struct ContactsScreen: View {
 
     var body: some View {
         ZStack {
-            Color.safeToneDeepBlue.ignoresSafeArea()
+            Color.safeToneBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Contacts")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .font(SafeToneFonts.largeTitle)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
@@ -61,13 +61,13 @@ struct ContactsScreen: View {
                         Section {
                             ForEach(section.contacts) { contact in
                                 contactRow(contact)
-                                    .listRowBackground(Color.safeToneDeepBlue)
+                                    .listRowBackground(Color.safeToneBackground)
                                     .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                             }
                         } header: {
                             Text(section.letter)
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(Color.safeTonePureWhite)
+                                .font(SafeToneFonts.bodySemibold)
+                                .foregroundStyle(Color(UIColor.systemGray))
                                 .id(section.letter)
                         }
                     }
@@ -89,24 +89,24 @@ struct ContactsScreen: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.safeTonePureWhite.opacity(0.2))
+                        .fill(Color(UIColor.systemGray5))
                         .frame(width: 48, height: 48)
                     Text(contact.initials)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(Color.safeTonePureWhite)
+                        .font(SafeToneFonts.bodySemibold)
+                        .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(contact.name)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(Color.safeTonePureWhite)
+                        .font(SafeToneFonts.body)
+                        .foregroundStyle(.white)
                     Text(contact.subtitle)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                        .font(SafeToneFonts.body)
+                        .foregroundStyle(Color(UIColor.systemGray))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.safeTonePureWhite.opacity(0.6))
+                    .foregroundStyle(Color(UIColor.systemGray3))
             }
             .frame(minHeight: kMinTouchTarget)
             .contentShape(Rectangle())
@@ -125,7 +125,7 @@ struct ContactsScreen: View {
                     } label: {
                         Text(letter)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.safeTonePureWhite.opacity(0.9))
+                            .foregroundStyle(.white)
                             .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
                             .contentShape(Rectangle())
                     }

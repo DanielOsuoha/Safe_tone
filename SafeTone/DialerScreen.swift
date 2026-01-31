@@ -2,7 +2,7 @@
 //  DialerScreen.swift
 //  SafeTone
 //
-//  Native iOS 26 keypad: Light Blue/White frosted glass circles, 3×4 grid, Emerald call button.
+//  Native iPhone keypad: systemGray6 circular buttons, white text, 3×4 grid, standard Apple Green call button.
 //
 
 import SwiftUI
@@ -34,16 +34,16 @@ struct DialerScreen: View {
 
     var body: some View {
         ZStack {
-            Color.safeToneDeepBlue.ignoresSafeArea()
+            Color.safeToneBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 Spacer().frame(height: 16)
                 HStack(spacing: 8) {
                     Image(systemName: "shield.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.safeTonePureWhite)
+                        .foregroundStyle(.white)
                     Text(enteredNumber.isEmpty ? " " : enteredNumber)
                         .font(.system(size: 34, weight: .light))
-                        .foregroundStyle(Color.safeTonePureWhite)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                 }
@@ -74,17 +74,17 @@ struct DialerScreen: View {
             VStack(spacing: 2) {
                 Text(key.digit)
                     .font(.system(size: 36, weight: .light))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .foregroundStyle(.white)
                 if let letters = key.letters {
                     Text(letters)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                        .foregroundStyle(Color(UIColor.systemGray))
                 }
             }
             .frame(width: 78, height: 78)
             .contentShape(Circle())
         }
-        .buttonStyle(FrostedDialKeyButtonStyle())
+        .buttonStyle(DialKeyButtonStyle())
     }
 
     private var callButton: some View {
@@ -93,45 +93,29 @@ struct DialerScreen: View {
         } label: {
             Image(systemName: "phone.fill")
                 .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(Color.safeTonePureWhite)
+                .foregroundStyle(.white)
                 .frame(width: 78, height: 78)
                 .contentShape(Circle())
         }
-        .buttonStyle(EmeraldCallKeyButtonStyle())
+        .buttonStyle(CallKeyButtonStyle())
     }
 }
 
-// MARK: - Frosted glass dial key (Light Blue/White refraction, 60pt+ touch)
-struct FrostedDialKeyButtonStyle: ButtonStyle {
+// MARK: - Dial key: systemGray6 circle, white text (no custom glass)
+struct DialKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(
-                ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.35),
-                                    Color.white.opacity(0.12)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-            )
+            .background(Circle().fill(Color(UIColor.systemGray6)))
             .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
-// MARK: - Large Emerald Green call button
-struct EmeraldCallKeyButtonStyle: ButtonStyle {
+// MARK: - Call key: standard Apple Green circle
+struct CallKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(Circle().fill(Color.safeToneEmerald))
+            .background(Circle().fill(Color.green))
             .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }

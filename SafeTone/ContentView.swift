@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  SafeTone
 //
-//  Native iOS 26 Phone layout: TabView with Liquid Glass tab bar.
+//  Standard SwiftUI TabView — native iPhone Phone app layout. Tab bar never disappears.
 //
 
 import SwiftUI
@@ -48,9 +48,7 @@ struct ContentView: View {
                 }
                 .tag(4)
         }
-        .tint(Color.safeTonePureWhite)
-        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .tint(Color.blue)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showLiveCall) {
             LiveCallMockup()

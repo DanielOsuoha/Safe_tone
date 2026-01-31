@@ -2,7 +2,7 @@
 //  RecentsScreen.swift
 //  SafeTone
 //
-//  Native iOS 26 Phone layout: Name (Large Bold), Subtitle (Call Type), Timestamp (leading). Missed = red.
+//  Native iPhone Recents: standard List, blue info.circle on the right, missed calls in Red.
 //
 
 import SwiftUI
@@ -13,31 +13,30 @@ struct RecentItem: Identifiable {
     let callType: String
     let timestamp: String
     let isMissed: Bool
-    let isVerified: Bool
 }
 
 private let mockRecents: [RecentItem] = [
-    RecentItem(name: "+1 (555) 123-4567", callType: "iPhone", timestamp: "Today, 2:34 PM", isMissed: false, isVerified: true),
-    RecentItem(name: "Alice Chen", callType: "mobile", timestamp: "Yesterday", isMissed: false, isVerified: true),
-    RecentItem(name: "Unknown", callType: "mobile", timestamp: "Yesterday", isMissed: true, isVerified: false),
-    RecentItem(name: "+1 (555) 987-6543", callType: "iPhone", timestamp: "Mon", isMissed: true, isVerified: false),
+    RecentItem(name: "+1 (555) 123-4567", callType: "iPhone", timestamp: "Today, 2:34 PM", isMissed: false),
+    RecentItem(name: "Alice Chen", callType: "mobile", timestamp: "Yesterday", isMissed: false),
+    RecentItem(name: "Unknown", callType: "mobile", timestamp: "Yesterday", isMissed: true),
+    RecentItem(name: "+1 (555) 987-6543", callType: "iPhone", timestamp: "Mon", isMissed: true),
 ]
 
 struct RecentsScreen: View {
     var body: some View {
         ZStack {
-            Color.safeToneDeepBlue.ignoresSafeArea()
+            Color.safeToneBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Recents")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .font(SafeToneFonts.largeTitle)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
                 List {
                     ForEach(mockRecents) { item in
                         recentRow(item)
-                            .listRowBackground(Color.safeToneDeepBlue)
+                            .listRowBackground(Color.safeToneBackground)
                             .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     }
                 }
@@ -53,21 +52,21 @@ struct RecentsScreen: View {
         } label: {
             HStack(alignment: .top, spacing: 16) {
                 Text(item.timestamp)
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(Color.safeTonePureWhite.opacity(0.7))
+                    .font(SafeToneFonts.body)
+                    .foregroundStyle(Color(UIColor.systemGray))
                     .frame(width: 80, alignment: .leading)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.name)
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(item.isMissed ? Color.red : Color.safeTonePureWhite)
+                        .foregroundStyle(item.isMissed ? Color.red : .white)
                     Text(item.callType)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                        .font(SafeToneFonts.body)
+                        .foregroundStyle(Color(UIColor.systemGray))
                 }
                 Spacer()
-                Image(systemName: "phone.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(Color.safeToneEmerald)
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Color.blue)
                     .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
                     .contentShape(Rectangle())
             }

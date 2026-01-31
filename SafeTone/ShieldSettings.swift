@@ -12,12 +12,12 @@ struct ShieldSettings: View {
 
     var body: some View {
         ZStack {
-            Color.safeToneDeepBlue.ignoresSafeArea()
+            Color.safeToneBackground.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 24) {
                     Text("Shield")
                         .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(Color.safeTonePureWhite)
+                        .foregroundStyle(Color.white)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 20)
                         .padding(.bottom, 8)
@@ -38,7 +38,7 @@ struct ShieldSettings: View {
                         title: "Block List",
                         subtitle: "Blocked numbers never ring.",
                         icon: "hand.raised.fill",
-                        color: Color.safeTonePureWhite.opacity(0.5)
+                        color: Color.white.opacity(0.5)
                     )
                     Spacer().frame(height: 40)
                 }
@@ -52,24 +52,24 @@ struct ShieldSettings: View {
             HStack {
                 Image(systemName: "shield.fill")
                     .font(.system(size: 28))
-                    .foregroundStyle(systemGuardActive ? Color.safeToneEmerald : Color.safeTonePureWhite.opacity(0.6))
+                    .foregroundStyle(systemGuardActive ? Color.green : Color.white.opacity(0.6))
                 Text("System Guard")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .foregroundStyle(Color.white)
                 Spacer()
             }
             Text("Protect your calls with real-time verification.")
                 .font(.system(size: 17, weight: .regular))
-                .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                .foregroundStyle(Color.white.opacity(0.8))
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack {
                 Text("Active")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .foregroundStyle(Color.white)
                 Spacer()
                 Toggle("", isOn: $systemGuardActive)
                     .labelsHidden()
-                    .tint(Color.safeToneEmerald)
+                    .tint(Color.green)
                     .frame(minWidth: 60, minHeight: 60)
             }
         }
@@ -77,7 +77,7 @@ struct ShieldSettings: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.safeTonePureWhite.opacity(0.12))
+                .fill(Color.white.opacity(0.12))
         )
     }
 
@@ -90,10 +90,10 @@ struct ShieldSettings: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .foregroundStyle(Color.white)
                 Text(subtitle)
                     .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                    .foregroundStyle(Color.white.opacity(0.8))
             }
             Spacer()
         }
@@ -101,7 +101,7 @@ struct ShieldSettings: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.safeTonePureWhite.opacity(0.12))
+                .fill(Color.white.opacity(0.12))
         )
     }
 }

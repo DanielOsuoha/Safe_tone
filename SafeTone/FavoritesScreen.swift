@@ -2,7 +2,7 @@
 //  FavoritesScreen.swift
 //  SafeTone
 //
-//  Native iOS 26 Phone layout. Solid Deep Blue, Pure White, 60pt touch targets.
+//  Native iPhone Favorites: standard List, Pure Black background.
 //
 
 import SwiftUI
@@ -22,11 +22,11 @@ private let mockFavorites: [FavoriteItem] = [
 struct FavoritesScreen: View {
     var body: some View {
         ZStack {
-            Color.safeToneDeepBlue.ignoresSafeArea()
+            Color.safeToneBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Favorites")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(Color.safeTonePureWhite)
+                    .font(SafeToneFonts.largeTitle)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
@@ -37,25 +37,25 @@ struct FavoritesScreen: View {
                         } label: {
                             HStack(spacing: 16) {
                                 Circle()
-                                    .fill(Color.safeTonePureWhite.opacity(0.2))
+                                    .fill(Color(UIColor.systemGray5))
                                     .frame(width: 48, height: 48)
                                     .overlay(
                                         Text(String(item.name.prefix(1)))
                                             .font(.system(size: 20, weight: .semibold))
-                                            .foregroundStyle(Color.safeTonePureWhite)
+                                            .foregroundStyle(.white)
                                     )
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.name)
-                                        .font(.system(size: 17, weight: .regular))
-                                        .foregroundStyle(Color.safeTonePureWhite)
+                                        .font(SafeToneFonts.body)
+                                        .foregroundStyle(.white)
                                     Text(item.subtitle)
-                                        .font(.system(size: 17, weight: .regular))
-                                        .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
+                                        .font(SafeToneFonts.body)
+                                        .foregroundStyle(Color(UIColor.systemGray))
                                 }
                                 Spacer()
                                 Image(systemName: "phone.fill")
                                     .font(.system(size: 18))
-                                    .foregroundStyle(Color.safeToneEmerald)
+                                    .foregroundStyle(Color.green)
                                     .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
                                     .contentShape(Rectangle())
                             }
@@ -63,7 +63,7 @@ struct FavoritesScreen: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .listRowBackground(Color.safeToneDeepBlue)
+                        .listRowBackground(Color.safeToneBackground)
                         .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     }
                 }
