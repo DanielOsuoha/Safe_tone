@@ -12,29 +12,29 @@ struct LiveCallMockup: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.safeToneDeepBlue.ignoresSafeArea()
             VStack(spacing: 0) {
                 HStack(spacing: 16) {
                     Text("Verified")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(isVerified ? Color.green : Color(UIColor.systemGray))
+                        .foregroundStyle(isVerified ? Color.safeToneEmerald : Color.safeTonePureWhite.opacity(0.7))
                     Toggle("", isOn: $isVerified)
                         .labelsHidden()
-                        .tint(Color.green)
-                        .frame(width: 60, height: 60)
+                        .tint(Color.safeToneEmerald)
+                        .frame(width: kMinTouchTarget, height: kMinTouchTarget)
                     Text("Scam Warning")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(!isVerified ? Color.red : Color(UIColor.systemGray))
+                        .foregroundStyle(!isVerified ? Color.red : Color.safeTonePureWhite.opacity(0.7))
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
                 Spacer().frame(height: 40)
                 Text("+1 (555) 123-4567")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.safeTonePureWhite)
                 Text("In Call")
                     .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(Color(UIColor.systemGray))
+                    .foregroundStyle(Color.safeTonePureWhite.opacity(0.8))
                     .padding(.top, 4)
                 Spacer().frame(height: 48)
                 shieldGraphic
@@ -44,7 +44,7 @@ struct LiveCallMockup: View {
                 } label: {
                     Image(systemName: "phone.down.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.safeTonePureWhite)
                         .frame(width: 72, height: 72)
                         .contentShape(Circle())
                 }
@@ -73,7 +73,7 @@ struct LiveCallMockup: View {
                 .overlay(
                     Image(systemName: isVerified ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .font(.system(size: 44))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.safeTonePureWhite)
                         .offset(y: -8),
                     alignment: .center
                 )
@@ -81,7 +81,7 @@ struct LiveCallMockup: View {
     }
 
     private var accentColor: Color {
-        isVerified ? Color.green : Color.red
+        isVerified ? Color.safeToneEmerald : Color.red
     }
 }
 
