@@ -33,6 +33,25 @@ struct RecentsScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                     .padding(.bottom, 16)
+                
+                // Test Button for Incoming Call (bypasses CallKit for quick testing)
+                Button {
+                    CallKitManager.shared.currentCallerName = "Alice Chen"
+                    CallKitManager.shared.isCallAnswered = true
+                    CallKitManager.shared.performAIDetection()
+                } label: {
+                    Text("📞 Test In-Call Screen")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.blue)
+                        )
+                }
+                .padding(.bottom, 12)
+                
                 List {
                     ForEach(mockRecents) { item in
                         recentRow(item)

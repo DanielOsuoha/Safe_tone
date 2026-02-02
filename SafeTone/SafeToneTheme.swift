@@ -9,16 +9,18 @@ import SwiftUI
 
 // MARK: - Colors (standard system; primary background Pure Black)
 extension Color {
-    /// Primary background — Pure Black (#000000).
     static let safeToneBackground = Color.black
+    static let safeToneTextPrimary = Color.white
+    static let safeToneTextSecondary = Color.gray
+    static let safeToneEmerald = Color(red: 0.2, green: 0.78, blue: 0.35)    
+    static let safeToneGlassHighlight = Color.white
 }
 
-// MARK: - Typography (SF Pro: Large Title 34pt, body 17pt)
 struct SafeToneFonts {
     static let largeTitle = Font.system(size: 34, weight: .bold)
     static let body = Font.system(size: 17, weight: .regular)
     static let bodySemibold = Font.system(size: 17, weight: .semibold)
+    static let tabLabel = Font.system(size: 10, weight: .medium)
 }
 
-// MARK: - Touch target (60×60 minimum for accessibility)
 let kMinTouchTarget: CGFloat = 60
