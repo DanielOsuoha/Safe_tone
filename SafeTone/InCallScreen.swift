@@ -16,13 +16,21 @@ enum CallVerificationStatus {
         switch self {
         case .voiceVerified: return "Voice Verified"
         case .aiDetected: return "AI Detected"
-        case .analyzing: return "Analyzing..."
+        case .analyzing: return "Analyzing for scams..."
         }
     }
     
     var color: Color {
         switch self {
-        case .voiceVerified: return .green
+        case .voiceVerified: return .blue
+        case .aiDetected: return .red
+        case .analyzing: return .orange
+        }
+    }
+    
+    var shadowColor: Color {
+        switch self {
+        case .voiceVerified: return .blue
         case .aiDetected: return .red
         case .analyzing: return .orange
         }
@@ -44,32 +52,50 @@ struct InCallScreen: View {
     @StateObject private var timerManager = TimerManager()
     @State private var isMuted = false
     @State private var isSpeakerOn = false
+    @State private var isGuardPaused = false
+    @State private var showPauseMessage = false
     @State private var pulseAnimation = false
     
     var body: some View {
         ZStack {
-            Color.safeToneBackground.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Top Section: Caller Info & Timer
                 topSection
-                    .padding(.top, 60)
+                    .padding(.top, 40)
                 
                 Spacer()
                 
-                // Middle Section: Security Shield
                 securitySection
                 
                 Spacer()
                 
-                // Bottom Section: Call Controls
-                callControlsGrid
-                    .padding(.horizontal, 20)
-                
-                // End Call Button
-                endCallButton
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                VStack {
+                    Spacer()
+                    callControlsGrid
+                        .padding(.bottom, 40)
+                }
+            }
+            
+            if showPauseMessage {
+                VStack {
+                    Text(isGuardPaused ? "Scam analysis paused for this call" : "Scam analysis resumed")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(Color(white: 0.15))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.blue.opacity(0.5), lineWidth: 1)
+                                )
+                        )
+                        .padding(.top, 80)
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
         .onAppear {
@@ -89,7 +115,7 @@ struct InCallScreen: View {
                 .foregroundStyle(.white)
             
             Text(timerManager.formattedDuration)
-                .font(.system(size: 18, weight: .regular))
+                .font(.system(size: 18, weight: .regular, design: .default))
                 .foregroundStyle(.white.opacity(0.7))
         }
     }
@@ -97,19 +123,13 @@ struct InCallScreen: View {
     // MARK: - Security Section
     private var securitySection: some View {
         VStack(spacing: 20) {
-            // Pulsing Shield Icon
-            ZStack {
-                Circle()
-                    .fill(verificationStatus.color.opacity(0.2))
-                    .frame(width: pulseAnimation ? 140 : 120, height: pulseAnimation ? 140 : 120)
-                    .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: pulseAnimation)
-                
-                Image(systemName: "shield.fill")
-                    .font(.system(size: 60, weight: .medium))
-                    .foregroundStyle(verificationStatus.color)
-            }
+            Image("SafetoneShield")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .cornerRadius(35)
+                .shadow(color: verificationStatus.shadowColor.opacity(0.6), radius: 40, x: 0, y: 0)
             
-            // Status Label
             Text(verificationStatus.text)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(verificationStatus.color)
@@ -118,31 +138,49 @@ struct InCallScreen: View {
     
     // MARK: - Call Controls Grid
     private var callControlsGrid: some View {
-        VStack(spacing: 24) {
-            // Row 1
-            HStack(spacing: 24) {
+        Grid(horizontalSpacing: 30, verticalSpacing: 30) {
+            // Row 1: Mute, Keypad, Speaker
+            GridRow {
                 callButton(title: "mute", icon: isMuted ? "mic.slash.fill" : "mic.fill", isActive: isMuted) {
                     isMuted.toggle()
                 }
                 callButton(title: "keypad", icon: "circle.grid.3x3.fill", isActive: false) {
-                    // Show keypad
                 }
                 callButton(title: "speaker", icon: "speaker.wave.3.fill", isActive: isSpeakerOn) {
                     isSpeakerOn.toggle()
                 }
             }
             
-            // Row 2
-            HStack(spacing: 24) {
+            GridRow {
                 callButton(title: "add call", icon: "plus", isActive: false) {
-                    // Add call
                 }
                 callButton(title: "FaceTime", icon: "video.fill", isActive: false) {
-                    // Switch to FaceTime
                 }
                 callButton(title: "contacts", icon: "person.crop.circle.fill", isActive: false) {
-                    // Show contacts
                 }
+            }
+
+            GridRow {
+                callButton(
+                    title: isGuardPaused ? "Resume" : "Pause Analysis",
+                    icon: isGuardPaused ? "shield.fill" : "shield.slash.fill",
+                    isActive: isGuardPaused
+                ) {
+                    isGuardPaused.toggle()
+                    showPauseMessage = true
+                    
+                    // Hide message after 2 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            showPauseMessage = false
+                        }
+                    }
+                }
+                
+                endCallButton
+                
+                Color.clear
+                    .gridCellUnsizedAxes([.horizontal, .vertical])
             }
         }
     }
@@ -152,7 +190,7 @@ struct InCallScreen: View {
             VStack(spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(isActive ? Color.white : Color(white: 0.2))
+                        .fill(isActive ? Color.white : Color(white: 0.15))
                         .frame(width: 75, height: 75)
                     
                     Image(systemName: icon)
@@ -161,8 +199,8 @@ struct InCallScreen: View {
                 }
                 
                 Text(title)
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(.system(size: 18, weight: .medium, design: .default))
+                    .foregroundStyle(.white.opacity(0.8))
             }
             .frame(minWidth: kMinTouchTarget, minHeight: kMinTouchTarget)
         }
@@ -172,21 +210,12 @@ struct InCallScreen: View {
     // MARK: - End Call Button
     private var endCallButton: some View {
         Button(action: onEndCall) {
-            HStack(spacing: 12) {
-                Image(systemName: "phone.down.fill")
-                    .font(.system(size: 24, weight: .semibold))
-                
-                Text("End Call")
-                    .font(.system(size: 20, weight: .semibold))
-            }
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.red)
-            )
+            Image(systemName: "phone.down.fill")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 75, height: 75)
         }
+        .background(Circle().fill(Color.red))
         .buttonStyle(.plain)
     }
     
@@ -199,7 +228,7 @@ struct InCallScreen: View {
 #Preview {
     InCallScreen(
         callerName: "Alice Chen",
-        verificationStatus: .voiceVerified,
+        verificationStatus: .analyzing,
         onEndCall: {}
     )
 }

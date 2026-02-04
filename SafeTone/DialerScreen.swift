@@ -37,18 +37,13 @@ struct DialerScreen: View {
             Color.safeToneBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 Spacer().frame(height: 16)
-                HStack(spacing: 8) {
-                    Image(systemName: "shield.fill")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.white)
-                    Text(enteredNumber.isEmpty ? " " : enteredNumber)
-                        .font(.system(size: 34, weight: .light))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.horizontal, 24)
-                .frame(minHeight: 44)
+                Text(enteredNumber.isEmpty ? " " : enteredNumber)
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .frame(minHeight: 44)
                 Spacer().frame(height: 24)
                 VStack(spacing: 18) {
                     ForEach(Array(keypadRows.enumerated()), id: \.offset) { _, row in

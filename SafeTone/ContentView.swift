@@ -1,62 +1,55 @@
-//
-//  ContentView.swift
-//  SafeTone
-//
 //  Standard SwiftUI TabView — native iPhone Phone app layout. Tab bar never disappears.
-//
 
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab: Int = 3 // Keypad
+    @State private var selectedTab: Int = 2 
     @State private var showLiveCall: Bool = false
     @StateObject private var callKitManager = CallKitManager.shared
 
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
-                FavoritesScreen()
-                    .tabItem {
-                        Image(systemName: "star.fill")
-                        Text("Favorites")
-                    }
-                    .tag(0)
-
                 RecentsScreen()
                     .tabItem {
                         Image(systemName: "clock.fill")
                         Text("Recents")
                     }
-                    .tag(1)
+                    .tag(0)
 
                 ContactsScreen()
                     .tabItem {
                         Image(systemName: "person.circle.fill")
                         Text("Contacts")
                     }
-                    .tag(2)
+                    .tag(1)
 
                 DialerTabView(onCallTapped: { showLiveCall = true })
                     .tabItem {
                         Image(systemName: "circle.grid.3x3.fill")
                         Text("Keypad")
                     }
-                    .tag(3)
+                    .tag(2)
 
-                VoicemailScreen()
+                ShieldSettings()
                     .tabItem {
-                        Image(systemName: "recordingtape")
-                        Text("Voicemail")
+                        Image(systemName: "shield.fill")
+                        Text("Shield")
                     }
-                    .tag(4)
+                    .tag(3)
             }
             .tint(Color.blue)
             .preferredColorScheme(.dark)
             .sheet(isPresented: $showLiveCall) {
-                LiveCallMockup()
+                InCallScreen(
+                    callerName: "Unknown Caller",
+                    verificationStatus: .analyzing,
+                    onEndCall: {
+                        showLiveCall = false
+                    }
+                )
             }
             
-            // In-Call Screen Overlay
             if callKitManager.isCallAnswered {
                 InCallScreen(
                     callerName: callKitManager.currentCallerName,

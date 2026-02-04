@@ -25,7 +25,7 @@ private let mockRecents: [RecentItem] = [
 struct RecentsScreen: View {
     var body: some View {
         ZStack {
-            Color.safeToneBackground.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
             VStack(spacing: 0) {
                 Text("Recents")
                     .font(SafeToneFonts.largeTitle)
@@ -34,28 +34,10 @@ struct RecentsScreen: View {
                     .padding(.top, 20)
                     .padding(.bottom, 16)
                 
-                // Test Button for Incoming Call (bypasses CallKit for quick testing)
-                Button {
-                    CallKitManager.shared.currentCallerName = "Alice Chen"
-                    CallKitManager.shared.isCallAnswered = true
-                    CallKitManager.shared.performAIDetection()
-                } label: {
-                    Text("📞 Test In-Call Screen")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.blue)
-                        )
-                }
-                .padding(.bottom, 12)
-                
                 List {
                     ForEach(mockRecents) { item in
                         recentRow(item)
-                            .listRowBackground(Color.safeToneBackground)
+                            .listRowBackground(Color.black)
                             .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                     }
                 }
@@ -67,7 +49,6 @@ struct RecentsScreen: View {
 
     private func recentRow(_ item: RecentItem) -> some View {
         Button {
-            // Mock tap
         } label: {
             HStack(alignment: .top, spacing: 16) {
                 Text(item.timestamp)
