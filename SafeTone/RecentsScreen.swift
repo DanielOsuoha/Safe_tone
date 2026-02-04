@@ -15,14 +15,30 @@ struct RecentItem: Identifiable {
     let isMissed: Bool
 }
 
-private let mockRecents: [RecentItem] = [
-    RecentItem(name: "+1 (555) 123-4567", callType: "iPhone", timestamp: "Today, 2:34 PM", isMissed: false),
-    RecentItem(name: "Alice Chen", callType: "mobile", timestamp: "Yesterday", isMissed: false),
-    RecentItem(name: "Unknown", callType: "mobile", timestamp: "Yesterday", isMissed: true),
-    RecentItem(name: "+1 (555) 987-6543", callType: "iPhone", timestamp: "Mon", isMissed: true),
+struct RecentSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let items: [RecentItem]
+}
+
+private let mockRecentSections: [RecentSection] = [
+    RecentSection(title: "Today", items: [
+        RecentItem(name: "Mom", callType: "iPhone", timestamp: "2:34 PM", isMissed: false)
+    ]),
+    RecentSection(title: "Yesterday", items: [
+        RecentItem(name: "Alice Chen", callType: "mobile", timestamp: "8:15 PM", isMissed: false),
+        RecentItem(name: "Unknown", callType: "mobile", timestamp: "3:22 PM", isMissed: true)
+    ]),
+    RecentSection(title: "Last Week", items: [
+        RecentItem(name: "+1 (555) 987-6543", callType: "iPhone", timestamp: "Mon", isMissed: true),
+        RecentItem(name: "David Park", callType: "mobile", timestamp: "Sun", isMissed: false),
+        RecentItem(name: "+1 (555) 234-5678", callType: "iPhone", timestamp: "Sat", isMissed: false)
+    ])
 ]
 
 struct RecentsScreen: View {
+    @State private var showDemoCall = false
+    
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
@@ -35,14 +51,60 @@ struct RecentsScreen: View {
                     .padding(.bottom, 16)
                 
                 List {
-                    ForEach(mockRecents) { item in
-                        recentRow(item)
-                            .listRowBackground(Color.black)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
+                    ForEach(mockRecentSections) { section in
+                        Section {
+                            ForEach(section.items) { item in
+                                recentRow(item)
+                                    .listRowBackground(Color.black)
+                                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
+                            }
+                        } header: {
+                            Text(section.title)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .textCase(nil)
+                                .padding(.top, section.title == "Today" ? 0 : 12)
+                                .padding(.bottom, 4)
+                        }
                     }
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+            }
+            
+            // Demo Call Button (bottom right corner)
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button {
+                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                        generator.impactOccurred()
+                        showDemoCall = true
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundStyle(.white)
+                            .background(
+                                Circle()
+                                    .fill(Color.blue)
+                                    .frame(width: 38, height: 38)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .opacity(0.8)
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 40)
+                }
+            }
+            .sheet(isPresented: $showDemoCall) {
+                InCallScreen(
+                    callerName: "Alice Chen",
+                    verificationStatus: .analyzing,
+                    onEndCall: {
+                        showDemoCall = false
+                    }
+                )
             }
         }
     }

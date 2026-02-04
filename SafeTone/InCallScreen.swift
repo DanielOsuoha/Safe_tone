@@ -11,12 +11,16 @@ enum CallVerificationStatus {
     case voiceVerified
     case aiDetected
     case analyzing
+    case deepFakeDetected
+    case analysisPaused
     
     var text: String {
         switch self {
         case .voiceVerified: return "Voice Verified"
         case .aiDetected: return "AI Detected"
         case .analyzing: return "Analyzing for scams..."
+        case .deepFakeDetected: return "Deep Fake Identified"
+        case .analysisPaused: return "Analysis Paused"
         }
     }
     
@@ -25,6 +29,8 @@ enum CallVerificationStatus {
         case .voiceVerified: return .blue
         case .aiDetected: return .red
         case .analyzing: return .orange
+        case .deepFakeDetected: return .red
+        case .analysisPaused: return .white.opacity(0.6)
         }
     }
     
@@ -33,6 +39,8 @@ enum CallVerificationStatus {
         case .voiceVerified: return .blue
         case .aiDetected: return .red
         case .analyzing: return .orange
+        case .deepFakeDetected: return .red
+        case .analysisPaused: return .white.opacity(0.3)
         }
     }
 }
@@ -55,6 +63,20 @@ struct InCallScreen: View {
     @State private var isGuardPaused = false
     @State private var showPauseMessage = false
     @State private var pulseAnimation = false
+    @State private var currentStatus: CallVerificationStatus
+    @State private var previousStatus: CallVerificationStatus?
+    @State private var analysisTimer: Timer?
+    @State private var accumulatedAnalysisTime: TimeInterval = 0
+    @State private var analysisTimeThreshold: TimeInterval = 15.0
+    @State private var warningPulse: Bool = false
+    @State private var warningBlink: Bool = true
+    
+    init(callerName: String, verificationStatus: CallVerificationStatus, onEndCall: @escaping () -> Void) {
+        self.callerName = callerName
+        self.verificationStatus = verificationStatus
+        self.onEndCall = onEndCall
+        _currentStatus = State(initialValue: verificationStatus)
+    }
     
     var body: some View {
         ZStack {
@@ -67,6 +89,7 @@ struct InCallScreen: View {
                 Spacer()
                 
                 securitySection
+                    .padding(.top, 15)
                 
                 Spacer()
                 
@@ -101,15 +124,21 @@ struct InCallScreen: View {
         .onAppear {
             timerManager.start()
             startPulseAnimation()
+            
+            // Start analysis timer if status is analyzing
+            if currentStatus == .analyzing {
+                startAnalysisTimer()
+            }
         }
         .onDisappear {
             timerManager.stop()
+            stopAnalysisTimer()
         }
     }
     
     // MARK: - Top Section
     private var topSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Text(callerName)
                 .font(.system(size: 36, weight: .semibold))
                 .foregroundStyle(.white)
@@ -128,11 +157,24 @@ struct InCallScreen: View {
                 .scaledToFit()
                 .frame(width: 120, height: 120)
                 .cornerRadius(35)
-                .shadow(color: verificationStatus.shadowColor.opacity(0.6), radius: 40, x: 0, y: 0)
+                .shadow(color: currentStatus.shadowColor.opacity(0.6), radius: 40, x: 0, y: 0)
+                .scaleEffect(currentStatus == .deepFakeDetected && warningPulse ? 1.1 : 1.0)
+                .animation(
+                    currentStatus == .deepFakeDetected ? 
+                        .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
+                    value: warningPulse
+                )
             
-            Text(verificationStatus.text)
+            Text(currentStatus.text)
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(verificationStatus.color)
+                .foregroundStyle(currentStatus.color)
+                .scaleEffect(currentStatus == .deepFakeDetected && warningPulse ? 1.15 : 1.0)
+                .opacity(currentStatus == .deepFakeDetected ? (warningBlink ? 1.0 : 0.4) : 1.0)
+                .animation(
+                    currentStatus == .deepFakeDetected ? 
+                        .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
+                    value: warningPulse
+                )
         }
     }
     
@@ -167,6 +209,23 @@ struct InCallScreen: View {
                     isActive: isGuardPaused
                 ) {
                     isGuardPaused.toggle()
+                    
+                    if isGuardPaused {
+                        // Save current status and pause
+                        previousStatus = currentStatus
+                        currentStatus = .analysisPaused
+                        stopAnalysisTimer()
+                    } else {
+                        // Restore previous status
+                        if let previous = previousStatus {
+                            currentStatus = previous
+                            // Resume timer if we're still analyzing
+                            if currentStatus == .analyzing {
+                                startAnalysisTimer()
+                            }
+                        }
+                    }
+                    
                     showPauseMessage = true
                     
                     // Hide message after 2 seconds
@@ -221,6 +280,64 @@ struct InCallScreen: View {
     
     private func startPulseAnimation() {
         pulseAnimation = true
+    }
+    
+    private func startAnalysisTimer() {
+        // Stop any existing timer
+        stopAnalysisTimer()
+        
+        // Start new timer that fires every second
+        analysisTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            accumulatedAnalysisTime += 1.0
+            
+            // Check if we've reached the threshold
+            if accumulatedAnalysisTime >= analysisTimeThreshold {
+                withAnimation {
+                    currentStatus = .deepFakeDetected
+                }
+                stopAnalysisTimer()
+                
+                // Trigger warning animations and haptics
+                triggerDeepFakeWarning()
+            }
+        }
+    }
+    
+    private func stopAnalysisTimer() {
+        analysisTimer?.invalidate()
+        analysisTimer = nil
+    }
+    
+    private func triggerDeepFakeWarning() {
+        // Start visual animations
+        warningPulse = true
+        
+        // Start blinking animation
+        Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { timer in
+            if currentStatus == .deepFakeDetected {
+                warningBlink.toggle()
+            } else {
+                timer.invalidate()
+            }
+        }
+        
+        // Trigger strong haptic feedback pattern
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+        
+        // Additional strong vibration pattern
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            let impact = UIImpactFeedbackGenerator(style: .heavy)
+            impact.impactOccurred()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            let impact = UIImpactFeedbackGenerator(style: .heavy)
+            impact.impactOccurred()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.error)
+        }
     }
 }
 
