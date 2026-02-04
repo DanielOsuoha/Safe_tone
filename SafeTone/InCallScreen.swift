@@ -7,14 +7,15 @@
 
 import SwiftUI
 
-enum CallVerificationStatus {
+@preconcurrency
+enum CallVerificationStatus: Sendable, Equatable {
     case voiceVerified
     case aiDetected
     case analyzing
     case deepFakeDetected
     case analysisPaused
     
-    var text: String {
+    nonisolated var text: String {
         switch self {
         case .voiceVerified: return "Voice Verified"
         case .aiDetected: return "AI Detected"
@@ -24,7 +25,7 @@ enum CallVerificationStatus {
         }
     }
     
-    var color: Color {
+    nonisolated var color: Color {
         switch self {
         case .voiceVerified: return .blue
         case .aiDetected: return .red
@@ -34,7 +35,7 @@ enum CallVerificationStatus {
         }
     }
     
-    var shadowColor: Color {
+    nonisolated var shadowColor: Color {
         switch self {
         case .voiceVerified: return .blue
         case .aiDetected: return .red
@@ -309,10 +310,8 @@ struct InCallScreen: View {
     }
     
     private func triggerDeepFakeWarning() {
-        // Start visual animations
         warningPulse = true
         
-        // Start blinking animation
         Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { timer in
             if currentStatus == .deepFakeDetected {
                 warningBlink.toggle()
@@ -321,11 +320,9 @@ struct InCallScreen: View {
             }
         }
         
-        // Trigger strong haptic feedback pattern
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.error)
         
-        // Additional strong vibration pattern
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             let impact = UIImpactFeedbackGenerator(style: .heavy)
             impact.impactOccurred()
