@@ -29,7 +29,6 @@ private let keypadRows: [[DialKey]] = [
 ]
 
 struct DialerScreen: View {
-    var onCallTapped: (() -> Void)?
     @State private var enteredNumber: String = ""
 
     var body: some View {
@@ -84,7 +83,7 @@ struct DialerScreen: View {
 
     private var callButton: some View {
         Button {
-            onCallTapped?()
+            // Demo uses shield secret button for CallKit trigger
         } label: {
             Image(systemName: "phone.fill")
                 .font(.system(size: 28, weight: .medium))
@@ -106,7 +105,6 @@ struct DialKeyButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Call key: standard Apple Green circle
 struct CallKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

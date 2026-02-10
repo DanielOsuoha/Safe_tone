@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct SafeToneApp: App {
+    @State private var showWelcome = true
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if showWelcome {
+                WelcomeView(showWelcome: $showWelcome)
+            } else {
+                ContentView()
+            }
         }
     }
 }

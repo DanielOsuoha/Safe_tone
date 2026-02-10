@@ -272,7 +272,7 @@ struct ShieldSettings: View {
             
             // Trigger CallKit incoming call on main thread
             await MainActor.run {
-                CallKitManager.shared.simulateIncomingCall(from: "SafeTone Guard")
+                CallKitManager.shared.simulateIncomingCall(from: "Alice Chen")
             }
         }
     }

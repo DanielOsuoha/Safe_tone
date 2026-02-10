@@ -4,7 +4,6 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab: Int = 2 
-    @State private var showLiveCall: Bool = false
     @StateObject private var callKitManager = CallKitManager.shared
 
     var body: some View {
@@ -24,7 +23,7 @@ struct ContentView: View {
                     }
                     .tag(1)
 
-                DialerTabView(onCallTapped: { showLiveCall = true })
+                DialerScreen()
                     .tabItem {
                         Image(systemName: "circle.grid.3x3.fill")
                         Text("Keypad")
@@ -40,39 +39,21 @@ struct ContentView: View {
             }
             .tint(Color.blue)
             .preferredColorScheme(.dark)
-            .sheet(isPresented: $showLiveCall) {
-                InCallScreen(
-                    callerName: "Unknown Caller",
-                    verificationStatus: .analyzing,
-                    onEndCall: {
-                        showLiveCall = false
-                    }
-                )
-            }
             
+            // Full-screen overlay when call is answered
             if callKitManager.isCallAnswered {
                 InCallScreen(
-                    callerName: callKitManager.currentCallerName,
+                    callerName: "Alice Chen",
                     verificationStatus: callKitManager.verificationStatus,
                     onEndCall: {
-                        // End the call via CallKit
-                        // Note: In production, you'd need to track the UUID
                         callKitManager.isCallAnswered = false
                     }
                 )
                 .transition(.move(edge: .bottom))
-                .zIndex(1)
+                .zIndex(999)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: callKitManager.isCallAnswered)
-    }
-}
-
-struct DialerTabView: View {
-    var onCallTapped: () -> Void
-
-    var body: some View {
-        DialerScreen(onCallTapped: onCallTapped)
     }
 }
 

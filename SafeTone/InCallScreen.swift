@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-@preconcurrency
-enum CallVerificationStatus: Sendable, Equatable {
+nonisolated(unsafe) enum CallVerificationStatus: Sendable, Equatable {
     case voiceVerified
     case aiDetected
     case analyzing
