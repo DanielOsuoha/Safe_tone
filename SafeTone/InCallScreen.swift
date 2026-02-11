@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-nonisolated(unsafe) enum CallVerificationStatus: Sendable, Equatable {
+nonisolated enum CallVerificationStatus: Sendable, Equatable {
     case voiceVerified
     case aiDetected
     case analyzing
