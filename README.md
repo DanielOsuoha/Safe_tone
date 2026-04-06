@@ -1,58 +1,73 @@
 # SafeTone
 
-A frontend-only visual prototype for a call-safety app. The UI follows Apple’s “Liquid Glass” style with a dark navy base, glass-morphic controls, and senior-friendly typography and touch targets.
+SafeTone is a SwiftUI iOS app prototype that demonstrates a call-safety UI and contains helper stubs for signaling and call handling. It combines a polished SwiftUI frontend with basic CallKit, signaling, and audio session components intended as a starting point for a full call-protection app.
+
+## Notable features
+
+- SwiftUI-based UI with focused screens for dialing, recents, contacts, and protection status.
+- Basic CallKit and audio session helpers (`CallKitManager`, `AudioSessionManager`) and lightweight signaling models (`SignalingClient`, `CallSignalingModels`) included as starting points.
+- In-call mock UI and protection states for prototyping user flows.
 
 ## Requirements
 
-- Xcode 26.2+ (or current Xcode with iOS 26 SDK)
-- iOS 26.2+ (or adjust deployment target in the project)
+- Xcode (use the latest stable release recommended)
+- iOS deployment target is set in the Xcode project; changing SDK/target may be required for older/newer toolchains
 
-## Getting Started
+## Getting started
 
 1. Open `SafeTone.xcodeproj` in Xcode.
-2. Select an iPhone simulator (e.g. iPhone 16).
-3. Press **Run** (⌘R).
+2. Select a simulator or a device (some call-related features require a real device and entitlements).
+3. Build and Run (⌘R).
 
-No backend, CallKit, or server logic—this is a visual prototype only.
+Notes:
+- The repo includes stubs and helper classes for CallKit and signaling, but running full call flows may require signing, entitlements, and backend signaling services.
 
-## Design
+## Screens and UX
 
-- **Base color:** Dark Navy (`#1A237E`)
-- **Style:** Translucent “liquid glass” buttons, soft gradients, and high-contrast text
-- **Typography:** Body text ≥ 18pt for readability
-- **Touch targets:** All interactive elements are at least 60×60 pt
+- Recents — recent call list with visual verification indicators.
+- Contacts — high-contrast contact list.
+- Keypad / Dialer — 3×4 dial pad with a Call action that opens an in-call mock.
+- Shield / Settings — protection status and controls.
+- Welcome / Onboarding — two-page onboarding flow with an activation button.
 
-## Screens
-
-| Tab / Screen | Description |
-|--------------|-------------|
-| **Recents** | Mock list of recent calls with verified/scam indicators. |
-| **Contacts** | High-contrast contact list with large avatars and initials. |
-| **Keypad** | 3×4 dial pad (0–9, *, #), number display, and emerald **Call** button with a subtle pulse. Tapping **Call** presents the live-call mockup. |
-| **Shield** | Dashboard with a large **System Guard: Active** toggle and status cards (Call Verification, Scam Warnings, Block List). |
-| **Live Call** (sheet) | Shown when you tap **Call** from the keypad. Large security shield; toggle between **Verified** (green) and **Scam Warning** (red). |
-
-## Navigation
-
-- **Tab bar:** Recents, Contacts, Keypad, Shield.
-- **Dynamic behavior:** The tab bar expands (shows labels) when you tap a tab and shrinks (icon-only) when you scroll in Recents, Contacts, or Shield.
-
-## Project Structure
+## Project layout (high-level)
 
 ```
 SafeTone/
-├── SafeToneApp.swift          # App entry
-├── ContentView.swift          # Root: tab switching, sheet, dynamic tab bar
-├── DynamicTabBar.swift        # Tab bar UI and MainTab enum
-├── SafeToneTheme.swift        # Colors, fonts, glass modifier, kMinTouchTarget
-├── ScrollOffsetPreferenceKey.swift  # Scroll offset for tab bar behavior
-├── DialerScreen.swift         # Keypad + Call button
-├── LiveCallMockup.swift       # In-call mock (Verified / Scam toggle)
-├── RecentsScreen.swift        # Recents list
-├── ContactsScreen.swift       # Contacts list
-├── ShieldSettings.swift       # System Guard + status cards
-└── Assets.xcassets/           # App icon, accent color
+├── SafeToneApp.swift
+├── ContentView.swift
+├── WelcomeView.swift
+├── DialerScreen.swift
+├── InCallScreen.swift
+├── RecentsScreen.swift
+├── ContactsScreen.swift
+├── FavoritesScreen.swift
+├── VoicemailScreen.swift
+├── ShieldSettings.swift
+├── DynamicTabBar.swift
+├── SafeToneTheme.swift
+├── ScrollOffsetPreferenceKey.swift
+├── SignalingClient.swift
+├── CallSignalingModels.swift
+├── CallKitManager.swift
+├── AudioSessionManager.swift
+├── CallEngine.swift
+├── CallManager.swift
+├── IncomingCallHelper.swift
+├── TimerManager.swift
+└── Assets.xcassets/
 ```
+
+## Development notes
+
+- Some files are prototypes or scaffolding for a backend-enabled app (e.g., `SignalingClient`, `CallEngine`). Treat them as starting points rather than production-ready components.
+- When testing CallKit or audio behavior on device, ensure appropriate entitlements and privacy entries in the project `Info.plist`.
+
+## Next steps you might want
+
+- Wire `SignalingClient` to a real signaling server for live call flows.
+- Add entitlements and provisioning to test CallKit on-device.
+- Replace prototype data in `RecentsScreen` and `ContactsScreen` with a real data source.
 
 ## License
 
