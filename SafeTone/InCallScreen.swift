@@ -130,6 +130,22 @@ struct InCallScreen: View {
                     value: warningPulse
                 )
 
+            if callManager.localAudioStreamManager.isStreaming {
+                VStack(spacing: 10) {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                            .scaleEffect(0.8 + CGFloat(callManager.localAudioStreamManager.inputLevel * 0.8))
+                        Text("Mic Live")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.75))
+                    }
+
+                    audioLevelMeter
+                }
+            }
+
             Text(callManager.securityStatusText)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(callManager.securityStatusColor.color)
@@ -140,6 +156,47 @@ struct InCallScreen: View {
                         .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
                     value: warningPulse
                 )
+        }
+    }
+
+    private var audioLevelMeter: some View {
+        VStack(spacing: 8) {
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.12))
+
+                    Capsule()
+                        .fill(Color.green.opacity(0.9))
+                        .frame(width: max(12, geometry.size.width * CGFloat(callManager.localAudioStreamManager.inputLevel)))
+                }
+            }
+            .frame(width: 140, height: 8)
+
+            if callManager.localAudioStreamManager.hasRecording {
+                Button {
+                    if callManager.localAudioStreamManager.isPlayingRecording {
+                        callManager.localAudioStreamManager.stopPlayback()
+                    } else {
+                        callManager.localAudioStreamManager.playLastRecording()
+                    }
+                } label: {
+                    Text(callManager.localAudioStreamManager.isPlayingRecording ? "Stop Playback" : "Play Last Recording")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.12))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                                )
+                        )
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 

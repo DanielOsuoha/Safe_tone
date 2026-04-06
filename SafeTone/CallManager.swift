@@ -52,6 +52,7 @@ final class CallManager: ObservableObject {
 
     private let signalingClient: any SignalingClient
     private let audioSessionManager: AudioSessionManager
+    let localAudioStreamManager: LocalAudioStreamManager
     private let engine: any CallEngine
     private var durationTimer: AnyCancellable?
     private var analysisTimer: AnyCancellable?
@@ -98,10 +99,12 @@ final class CallManager: ObservableObject {
     private init(
         signalingClient: any SignalingClient = MockSignalingClient(),
         audioSessionManager: AudioSessionManager = AudioSessionManager(),
+        localAudioStreamManager: LocalAudioStreamManager = LocalAudioStreamManager(),
         engine: (any CallEngine)? = nil
     ) {
         self.signalingClient = signalingClient
         self.audioSessionManager = audioSessionManager
+        self.localAudioStreamManager = localAudioStreamManager
         self.engine = engine ?? Self.makeEngine(
             mode: Self.engineMode,
             signalingClient: signalingClient,
@@ -177,6 +180,7 @@ final class CallManager: ObservableObject {
         stopIncomingRinging()
         stopDurationTimer()
         stopAnalysisTimer()
+        localAudioStreamManager.stopStreaming()
         audioSessionManager.deactivateAudioSession()
         phase = .ended
         showPauseMessage = false
@@ -243,6 +247,7 @@ final class CallManager: ObservableObject {
         isRingingOut = false
         stopIncomingRinging()
         audioSessionManager.activateCallAudio()
+        localAudioStreamManager.startStreaming()
         phase = .connected
         callDuration = 0
         verificationStatus = .analyzing
@@ -293,6 +298,7 @@ final class CallManager: ObservableObject {
         stopIncomingRinging()
         stopDurationTimer()
         stopAnalysisTimer()
+        localAudioStreamManager.stopStreaming()
         audioSessionManager.deactivateAudioSession()
         activeCall = nil
         phase = .idle
