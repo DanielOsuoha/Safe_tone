@@ -8,21 +8,11 @@
 import Foundation
 import CallKit
 import AVFoundation
-import Combine
 
-class CallKitManager: NSObject, ObservableObject {
+final class CallKitManager: NSObject {
     static let shared = CallKitManager()
-    
-    @Published var isCallAnswered = false {
-        willSet { objectWillChange.send() }
-    }
-    @Published var currentCallerName: String = "" {
-        willSet { objectWillChange.send() }
-    }
-    @Published var verificationStatus: CallVerificationStatus = .analyzing {
-        willSet { objectWillChange.send() }
-    }
-    
+
+    private let callManager = CallManager.shared
     private let provider: CXProvider
     private let callController = CXCallController()
     
@@ -50,7 +40,9 @@ class CallKitManager: NSObject, ObservableObject {
         
         provider.reportNewIncomingCall(with: uuid, update: update) { error in
             if error == nil {
-                self.currentCallerName = handle
+                Task { @MainActor in
+                    self.callManager.receiveIncomingCall(id: uuid, handle: handle, displayName: handle)
+                }
             }
             completion?(error)
         }
@@ -65,19 +57,10 @@ class CallKitManager: NSObject, ObservableObject {
             if let error = error {
                 print("Error ending call: \(error.localizedDescription)")
             } else {
-                self.isCallAnswered = false
-                self.currentCallerName = ""
+                Task { @MainActor in
+                    self.callManager.endCall()
+                }
             }
-        }
-    }
-    
-    // MARK: - Mock AI Detection
-    /// Simulates AI voice detection after call starts
-    func performAIDetection() {
-        // In a real app, this would analyze audio in real-time
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // Randomly verify or detect AI for demo purposes
-            self.verificationStatus = Bool.random() ? .voiceVerified : .aiDetected
         }
     }
 }
@@ -85,35 +68,26 @@ class CallKitManager: NSObject, ObservableObject {
 // MARK: - CXProviderDelegate
 extension CallKitManager: CXProviderDelegate {
     func providerDidReset(_ provider: CXProvider) {
-        // Handle provider reset
-        isCallAnswered = false
-        currentCallerName = ""
+        Task { @MainActor in
+            callManager.endCall()
+        }
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        // Configure audio session
         configureAudioSession()
-        
-        // Answer the call
-        DispatchQueue.main.async {
-            self.isCallAnswered = true
-            self.verificationStatus = .analyzing
+
+        Task { @MainActor in
+            callManager.answerCall()
         }
-        
-        // Start AI detection
-        performAIDetection()
-        
-        // Fulfill the action
+
         action.fulfill()
     }
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
-        DispatchQueue.main.async {
-            self.isCallAnswered = false
-            self.currentCallerName = ""
-            self.verificationStatus = .analyzing
+        Task { @MainActor in
+            callManager.endCall()
         }
-        
+
         action.fulfill()
     }
     

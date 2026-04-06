@@ -9,14 +9,17 @@ import SwiftUI
 
 @main
 struct SafeToneApp: App {
-    @State private var showWelcome = true
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @StateObject private var callManager = CallManager.shared
     
     var body: some Scene {
         WindowGroup {
-            if showWelcome {
-                WelcomeView(showWelcome: $showWelcome)
-            } else {
+            if hasCompletedOnboarding {
                 ContentView()
+                    .environmentObject(callManager)
+            } else {
+                WelcomeView()
+                    .environmentObject(callManager)
             }
         }
     }

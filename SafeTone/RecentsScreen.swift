@@ -37,7 +37,7 @@ private let mockRecentSections: [RecentSection] = [
 ]
 
 struct RecentsScreen: View {
-    @State private var showDemoCall = false
+    @EnvironmentObject private var callManager: CallManager
     
     var body: some View {
         ZStack {
@@ -80,7 +80,7 @@ struct RecentsScreen: View {
                     Button {
                         let generator = UIImpactFeedbackGenerator(style: .medium)
                         generator.impactOccurred()
-                        showDemoCall = true
+                        callManager.receiveIncomingCall(handle: "Alice Chen", displayName: "Alice Chen")
                     } label: {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 30))
@@ -96,15 +96,6 @@ struct RecentsScreen: View {
                     .padding(.trailing, 24)
                     .padding(.bottom, 40)
                 }
-            }
-            .sheet(isPresented: $showDemoCall) {
-                InCallScreen(
-                    callerName: "Alice Chen",
-                    verificationStatus: .analyzing,
-                    onEndCall: {
-                        showDemoCall = false
-                    }
-                )
             }
         }
     }
@@ -141,4 +132,5 @@ struct RecentsScreen: View {
 
 #Preview {
     RecentsScreen()
+        .environmentObject(CallManager.shared)
 }

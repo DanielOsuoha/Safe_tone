@@ -33,6 +33,7 @@ private let allContacts: [ContactRow] = [
 
 struct ContactsScreen: View {
     @State private var searchText: String = ""
+    @EnvironmentObject private var callManager: CallManager
 
     private var filteredContacts: [ContactRow] {
         if searchText.isEmpty { return allContacts }
@@ -90,7 +91,7 @@ struct ContactsScreen: View {
 
     private func contactRow(_ contact: ContactRow) -> some View {
         Button {
-            // Mock tap
+            callManager.startOutgoingCall(to: contact.subtitle, displayName: contact.name)
         } label: {
             HStack(spacing: 16) {
                 ZStack {
@@ -145,4 +146,5 @@ struct ContactsScreen: View {
 
 #Preview {
     ContactsScreen()
+        .environmentObject(CallManager.shared)
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @Binding var showWelcome: Bool
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var currentPage: Int = 1
     @State private var showBlackTransition: Bool = false
     @State private var buttonActivated: Bool = false
@@ -174,12 +174,12 @@ struct WelcomeView: View {
             
             // Navigate to main app after cross-fade
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                showWelcome = false
+                hasCompletedOnboarding = true
             }
         }
     }
 }
 
 #Preview {
-    WelcomeView(showWelcome: .constant(true))
+    WelcomeView()
 }

@@ -30,6 +30,11 @@ private let keypadRows: [[DialKey]] = [
 
 struct DialerScreen: View {
     @State private var enteredNumber: String = ""
+    @EnvironmentObject private var callManager: CallManager
+
+    private var canStartCall: Bool {
+        !enteredNumber.isEmpty
+    }
 
     var body: some View {
         ZStack {
@@ -83,7 +88,8 @@ struct DialerScreen: View {
 
     private var callButton: some View {
         Button {
-            // Demo uses shield secret button for CallKit trigger
+            guard canStartCall else { return }
+            callManager.startOutgoingCall(to: enteredNumber)
         } label: {
             Image(systemName: "phone.fill")
                 .font(.system(size: 28, weight: .medium))
@@ -91,6 +97,8 @@ struct DialerScreen: View {
                 .frame(width: 78, height: 78)
                 .contentShape(Circle())
         }
+        .disabled(!canStartCall)
+        .opacity(canStartCall ? 1.0 : 0.45)
         .buttonStyle(CallKeyButtonStyle())
     }
 }
@@ -108,7 +116,7 @@ struct DialKeyButtonStyle: ButtonStyle {
 struct CallKeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(Circle().fill(Color.green))
+            .background(Circle().fill(configuration.isPressed ? Color.green.opacity(0.8) : Color.green))
             .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
@@ -116,4 +124,5 @@ struct CallKeyButtonStyle: ButtonStyle {
 
 #Preview {
     DialerScreen()
+        .environmentObject(CallManager.shared)
 }
