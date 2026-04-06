@@ -94,18 +94,27 @@ struct ContentView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.black.opacity(0.92))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    )
-            )
+            .background(incomingBannerBackground)
             .padding(.horizontal, 12)
             .padding(.top, 12)
 
             Spacer()
+        }
+    }
+
+    private var incomingBannerBackground: some View {
+        ZStack(alignment: .bottom) {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+
+            Rectangle()
+                .fill(Color.blue.opacity(0.7))
+                .frame(height: 1)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 6)
         }
     }
 }

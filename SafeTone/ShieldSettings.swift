@@ -26,7 +26,6 @@ struct ShieldSettings: View {
                 .cornerRadius(65)
                 .shadow(color: .blue.opacity(0.6), radius: 50, x: 0, y: 0)
                             
-                // Header Text
                 HStack(spacing: 4) {
                     Text("SafeTone Protection:")
                         .font(.system(size: 24, weight: .bold))
@@ -98,7 +97,6 @@ struct ShieldSettings: View {
                 }
             }
             
-            // Upgrade Overlay
             if showUpgradeOverlay {
                 upgradeOverlay
             }
@@ -262,15 +260,9 @@ struct ShieldSettings: View {
         
         simulationTask?.cancel()
         
-        // Create a new background task that survives app backgrounding
         simulationTask = Task {
-            // Wait 5 seconds
             try? await Task.sleep(nanoseconds: 5_000_000_000)
-            
-            // Check if task wasn't cancelled
             guard !Task.isCancelled else { return }
-            
-            // Trigger CallKit incoming call on main thread
             await MainActor.run {
                 CallKitManager.shared.simulateIncomingCall(from: "Alice Chen")
             }

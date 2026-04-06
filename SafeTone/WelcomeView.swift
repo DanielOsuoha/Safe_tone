@@ -1,10 +1,6 @@
-//
+
 //  WelcomeView.swift
 //  SafeTone
-//
-//  Two-page minimalist welcome flow
-//
-
 import SwiftUI
 
 struct WelcomeView: View {
@@ -22,8 +18,6 @@ struct WelcomeView: View {
                 setupPage
                     .transition(.opacity)
             }
-            
-            // Black fade transition
             if showBlackTransition {
                 Color.black
                     .ignoresSafeArea()
@@ -33,29 +27,21 @@ struct WelcomeView: View {
         .animation(.easeInOut(duration: 0.3), value: currentPage)
         .animation(.easeInOut(duration: 0.5), value: showBlackTransition)
     }
-    
-    // MARK: - Page 1: White Splash
     private var splashPage: some View {
         ZStack {
             Color.white.ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Spacer()
-                
-                // Shield Image
                 Image("SafetoneShield")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 180, height: 180)
                     .clipShape(RoundedRectangle(cornerRadius: 40))
-                
-                // SafeTone Text
                 Text("SafeTone")
                     .font(.system(size: 40, weight: .bold))
                     .foregroundStyle(.black)
                     .tracking(0.5)
-                
-                // Loading Spinner
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: Color(white: 0.6)))
                     .scaleEffect(0.8)
@@ -65,20 +51,16 @@ struct WelcomeView: View {
             }
         }
         .onAppear {
-            // Auto-advance after 5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                 currentPage = 2
             }
         }
     }
-    
-    // MARK: - Page 2: 1-Click Setup
     private var setupPage: some View {
         ZStack {
             Color.white.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Step Indicator
                 Text("Step 1 of 1")
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(Color(red: 0.0, green: 0.48, blue: 1.0))
@@ -87,14 +69,12 @@ struct WelcomeView: View {
                 Spacer()
                 
                 VStack(spacing: 28) {
-                    // Small Shield Icon
                     Image("SafetoneShield")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 60, height: 60)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     
-                    // Header
                     Text("Almost There!")
                         .font(.system(size: 38, weight: .bold))
                         .foregroundStyle(.black)
@@ -102,7 +82,6 @@ struct WelcomeView: View {
                         .lineSpacing(4)
                         .padding(.horizontal, 32)
                     
-                    // Body
                     Text("Tap below to activate call protection and block scam calls automatically")
                         .font(.system(size: 19, weight: .regular))
                         .foregroundStyle(Color(white: 0.3))
@@ -110,7 +89,6 @@ struct WelcomeView: View {
                         .lineSpacing(8)
                         .padding(.horizontal, 40)
                     
-                    // Trust Indicators
                     VStack(spacing: 16) {
                         trustFeature(icon: "checkmark.shield.fill", text: "Easy to use")
                         trustFeature(icon: "checkmark.shield.fill", text: "Always protected")
@@ -122,7 +100,6 @@ struct WelcomeView: View {
                 Spacer()
                 Spacer()
                 
-                // Action Button
                 Button {
                     completeSetup()
                 } label: {
@@ -144,8 +121,6 @@ struct WelcomeView: View {
             }
         }
     }
-    
-    // MARK: - Trust Feature Row
     private func trustFeature(icon: String, text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -162,17 +137,12 @@ struct WelcomeView: View {
         .padding(.horizontal, 60)
     }
     
-    // MARK: - Transition Logic
     private func completeSetup() {
-        // Activate button state
         buttonActivated = true
         
-        // Wait 0.5 seconds to show green confirmation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Show black transition for cross-fade effect
             showBlackTransition = true
             
-            // Navigate to main app after cross-fade
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 hasCompletedOnboarding = true
             }

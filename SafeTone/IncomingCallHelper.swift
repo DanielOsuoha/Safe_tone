@@ -9,8 +9,6 @@ import Foundation
 import CallKit
 
 extension CallKitManager {
-    /// Simulates an incoming call for testing purposes
-    /// Call this from your UI to test the call flow
     func simulateIncomingCall(from callerName: String) {
         let uuid = UUID()
         reportIncomingCall(uuid: uuid, handle: callerName) { error in

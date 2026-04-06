@@ -27,6 +27,7 @@ protocol CallEngine: AnyObject {
     func endCall(callID: UUID)
     func setMuted(_ isMuted: Bool, for callID: UUID)
     func setSpeakerEnabled(_ isSpeakerEnabled: Bool, for callID: UUID)
+    func handleRemoteMessage(_ message: SignalingMessage)
 }
 
 final class MockCallEngine: CallEngine {
@@ -150,6 +151,36 @@ final class MockCallEngine: CallEngine {
             )
         )
         log("Mock engine speaker set to \(isSpeakerEnabled)")
+    }
+
+    func handleRemoteMessage(_ message: SignalingMessage) {
+        switch message {
+        case let .callAnswer(payload):
+            guard activeCallID == payload.callID else { return }
+            connectWorkItem?.cancel()
+            connectWorkItem = nil
+            stopRingingLoop()
+            log("Mock engine received remote answer")
+            emit(.connected, for: payload.callID)
+        case let .callEnd(payload):
+            guard activeCallID == payload.callID else { return }
+            connectWorkItem?.cancel()
+            connectWorkItem = nil
+            stopRingingLoop()
+            activeCallID = nil
+            log("Mock engine received remote hangup")
+            emit(.ended, for: payload.callID)
+        case let .sessionDescription(payload):
+            log("Received remote session description type=\(payload.type.rawValue) for call \(payload.callID)")
+        case let .iceCandidate(payload):
+            log("Received remote ICE candidate for call \(payload.callID)")
+        case let .mute(payload):
+            log("Received remote mute state \(payload.value) for call \(payload.callID)")
+        case let .speaker(payload):
+            log("Received remote speaker state \(payload.value) for call \(payload.callID)")
+        case .callInvite:
+            break
+        }
     }
 
     private func startRingingLoop(for callID: UUID) {

@@ -12,6 +12,13 @@ import Combine
 final class CallManager: ObservableObject {
     static let shared = CallManager()
 
+    private enum EngineMode {
+        case mock
+        case webRTC
+    }
+
+    private static let engineMode: EngineMode = .mock
+
     enum CallPhase: Equatable {
         case idle
         case incoming
@@ -95,11 +102,33 @@ final class CallManager: ObservableObject {
     ) {
         self.signalingClient = signalingClient
         self.audioSessionManager = audioSessionManager
-        self.engine = engine ?? MockCallEngine(
+        self.engine = engine ?? Self.makeEngine(
+            mode: Self.engineMode,
             signalingClient: signalingClient,
             audioSessionManager: audioSessionManager
         )
+        self.signalingClient.delegate = self
         self.engine.delegate = self
+    }
+
+    private static func makeEngine(
+        mode: EngineMode,
+        signalingClient: any SignalingClient,
+        audioSessionManager: AudioSessionManager
+    ) -> any CallEngine {
+        switch mode {
+        case .mock:
+            return MockCallEngine(
+                signalingClient: signalingClient,
+                audioSessionManager: audioSessionManager
+            )
+        case .webRTC:
+            return WebRTCCallEngine(
+                signalingClient: signalingClient,
+                audioSessionManager: audioSessionManager,
+                webRTCClient: StubWebRTCClient()
+            )
+        }
     }
 
     func startOutgoingCall(to handle: String, displayName: String? = nil) {
@@ -327,6 +356,51 @@ extension CallManager: CallEngineDelegate {
                 log("Outgoing ringing stopped")
             }
             transitionToEndedState()
+        }
+    }
+}
+
+extension CallManager: SignalingClientDelegate {
+    func signalingClientDidConnect(_ client: any SignalingClient) {
+        log("Signaling connected")
+    }
+
+    func signalingClientDidDisconnect(_ client: any SignalingClient, error: Error?) {
+        if let error {
+            log("Signaling disconnected with error: \(error.localizedDescription)")
+        } else {
+            log("Signaling disconnected")
+        }
+    }
+
+    func signalingClient(_ client: any SignalingClient, didReceive message: SignalingMessage) {
+        log("Received inbound signaling message")
+
+        switch message {
+        case let .callInvite(payload):
+            receiveIncomingCall(
+                id: payload.callID,
+                handle: payload.caller.handle,
+                displayName: payload.caller.displayName
+            )
+        case let .callEnd(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
+        case let .callAnswer(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
+        case let .sessionDescription(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
+        case let .iceCandidate(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
+        case let .mute(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
+        case let .speaker(payload):
+            guard activeCall?.id == payload.callID else { return }
+            engine.handleRemoteMessage(message)
         }
     }
 }

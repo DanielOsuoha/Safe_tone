@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Colors (standard system; primary background Pure Black)
 extension Color {
     static let safeToneBackground = Color.black
     static let safeToneTextPrimary = Color.white

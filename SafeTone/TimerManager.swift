@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class TimerManager: ObservableObject {
-    @Published var callDuration: Int = 0 // seconds
+    @Published var callDuration: Int = 0 
     
     private var timer: AnyCancellable?
     
