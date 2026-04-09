@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8A356F009756793F5B86A18A /* Pods_SafeTone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 970AACA476542FD61A9533F8 /* Pods_SafeTone.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		970AACA476542FD61A9533F8 /* Pods_SafeTone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SafeTone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F62D86D396AC6714F1B854B /* Pods-SafeTone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafeTone.release.xcconfig"; path = "Target Support Files/Pods-SafeTone/Pods-SafeTone.release.xcconfig"; sourceTree = "<group>"; };
 		BF8809972F2D9F2200BB92AE /* SafeTone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeTone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D467334A8967671918F4F9EB /* Pods-SafeTone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafeTone.debug.xcconfig"; path = "Target Support Files/Pods-SafeTone/Pods-SafeTone.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,17 +43,38 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A356F009756793F5B86A18A /* Pods_SafeTone.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		154A7B57E6E84EE7B1631342 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D467334A8967671918F4F9EB /* Pods-SafeTone.debug.xcconfig */,
+				9F62D86D396AC6714F1B854B /* Pods-SafeTone.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		7F5A74B0CF982836CDFDBE4C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				970AACA476542FD61A9533F8 /* Pods_SafeTone.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BF88098E2F2D9F2200BB92AE = {
 			isa = PBXGroup;
 			children = (
 				BF8809992F2D9F2200BB92AE /* SafeTone */,
 				BF8809982F2D9F2200BB92AE /* Products */,
+				154A7B57E6E84EE7B1631342 /* Pods */,
+				7F5A74B0CF982836CDFDBE4C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,9 +93,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF8809A22F2D9F2400BB92AE /* Build configuration list for PBXNativeTarget "SafeTone" */;
 			buildPhases = (
+				E9180AA5E46F92145B0040F6 /* [CP] Check Pods Manifest.lock */,
 				BF8809932F2D9F2200BB92AE /* Sources */,
 				BF8809942F2D9F2200BB92AE /* Frameworks */,
 				BF8809952F2D9F2200BB92AE /* Resources */,
+				50D70565E1E0521FAD73A8E7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -77,8 +107,6 @@
 				BF8809992F2D9F2200BB92AE /* SafeTone */,
 			);
 			name = SafeTone;
-			packageProductDependencies = (
-			);
 			productName = SafeTone;
 			productReference = BF8809972F2D9F2200BB92AE /* SafeTone.app */;
 			productType = "com.apple.product-type.application";
@@ -126,6 +154,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		50D70565E1E0521FAD73A8E7 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SafeTone/Pods-SafeTone-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SafeTone/Pods-SafeTone-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SafeTone/Pods-SafeTone-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E9180AA5E46F92145B0040F6 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SafeTone-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BF8809932F2D9F2200BB92AE /* Sources */ = {
@@ -176,6 +246,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -239,6 +310,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -259,6 +331,7 @@
 		};
 		BF8809A32F2D9F2400BB92AE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D467334A8967671918F4F9EB /* Pods-SafeTone.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -293,6 +366,7 @@
 		};
 		BF8809A42F2D9F2400BB92AE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9F62D86D396AC6714F1B854B /* Pods-SafeTone.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

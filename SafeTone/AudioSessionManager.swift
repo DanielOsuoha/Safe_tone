@@ -18,7 +18,7 @@ final class AudioSessionManager {
         configureSession(
             category: .playAndRecord,
             mode: .voiceChat,
-            options: [.allowBluetooth, .defaultToSpeaker],
+            options: [.allowBluetoothHFP, .defaultToSpeaker],
             context: "call audio"
         )
     }

@@ -97,18 +97,22 @@ final class CallManager: ObservableObject {
     }
 
     private init(
-        signalingClient: any SignalingClient = MockSignalingClient(),
-        audioSessionManager: AudioSessionManager = AudioSessionManager(),
-        localAudioStreamManager: LocalAudioStreamManager = LocalAudioStreamManager(),
+        signalingClient: (any SignalingClient)? = nil,
+        audioSessionManager: AudioSessionManager? = nil,
+        localAudioStreamManager: LocalAudioStreamManager? = nil,
         engine: (any CallEngine)? = nil
     ) {
-        self.signalingClient = signalingClient
-        self.audioSessionManager = audioSessionManager
-        self.localAudioStreamManager = localAudioStreamManager
+        let resolvedSignalingClient = signalingClient ?? MockSignalingClient()
+        let resolvedAudioSessionManager = audioSessionManager ?? AudioSessionManager()
+        let resolvedLocalAudioStreamManager = localAudioStreamManager ?? LocalAudioStreamManager()
+
+        self.signalingClient = resolvedSignalingClient
+        self.audioSessionManager = resolvedAudioSessionManager
+        self.localAudioStreamManager = resolvedLocalAudioStreamManager
         self.engine = engine ?? Self.makeEngine(
             mode: Self.engineMode,
-            signalingClient: signalingClient,
-            audioSessionManager: audioSessionManager
+            signalingClient: resolvedSignalingClient,
+            audioSessionManager: resolvedAudioSessionManager
         )
         self.signalingClient.delegate = self
         self.engine.delegate = self
@@ -129,7 +133,7 @@ final class CallManager: ObservableObject {
             return WebRTCCallEngine(
                 signalingClient: signalingClient,
                 audioSessionManager: audioSessionManager,
-                webRTCClient: StubWebRTCClient()
+                webRTCClient: NativeWebRTCClient()
             )
         }
     }

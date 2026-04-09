@@ -1,0 +1,6 @@
+framework module Pods_SafeTone {
+  umbrella header "Pods-SafeTone-umbrella.h"
+
+  export *
+  module * { export * }
+}
