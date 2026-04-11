@@ -156,6 +156,34 @@ struct InCallScreen: View {
                         .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
                     value: warningPulse
                 )
+
+            if callManager.phase == .connected {
+                voiceAnalysisStatus
+            }
+        }
+    }
+
+    private var voiceAnalysisStatus: some View {
+        VStack(spacing: 8) {
+            Text(callManager.voiceAnalysisDetail)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white.opacity(0.72))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 28)
+
+            if callManager.verificationStatus == .analyzing {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.white.opacity(0.12))
+
+                        Capsule()
+                            .fill(Color.orange.opacity(0.9))
+                            .frame(width: max(10, geometry.size.width * CGFloat(callManager.voiceAnalysisProgress)))
+                    }
+                }
+                .frame(width: 190, height: 7)
+            }
         }
     }
 

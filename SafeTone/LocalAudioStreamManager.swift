@@ -13,9 +13,21 @@ import Accelerate
 final class LocalAudioStreamManager: NSObject, ObservableObject {
     @Published private(set) var isStreaming = false
     @Published private(set) var inputLevel: Float = 0
+    @Published private(set) var recentInputPeak: Float = 0
     @Published private(set) var permissionStatus = AVAudioApplication.shared.recordPermission
     @Published private(set) var hasRecording = false
     @Published private(set) var isPlayingRecording = false
+
+    var lastRecordingURL: URL? {
+        recordingURL
+    }
+
+    @MainActor
+    func consumeRecentInputPeak() -> Float {
+        let peak = recentInputPeak
+        recentInputPeak = 0
+        return peak
+    }
 
     private let engine = AVAudioEngine()
     private let audioSession = AVAudioSession.sharedInstance()
@@ -61,6 +73,7 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.isStreaming = false
             self.inputLevel = 0
+            self.recentInputPeak = 0
             self.hasRecording = recorded
         }
 
@@ -139,6 +152,7 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
 
                 DispatchQueue.main.async {
                     self?.inputLevel = normalized
+                    self?.recentInputPeak = max(self?.recentInputPeak ?? 0, normalized)
                 }
             }
         }

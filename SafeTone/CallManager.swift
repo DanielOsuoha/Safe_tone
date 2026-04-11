@@ -49,16 +49,23 @@ final class CallManager: ObservableObject {
     @Published var showPauseMessage = false
     @Published private(set) var isRingingOut = false
     @Published private(set) var isIncomingRinging = false
+    @Published private(set) var voiceAnalysisDetail = "Listening for live speech..."
+    @Published private(set) var voiceAnalysisProgress: Double = 0
 
     private let signalingClient: any SignalingClient
     private let audioSessionManager: AudioSessionManager
     let localAudioStreamManager: LocalAudioStreamManager
+    private let voiceAnalysisClient: any VoiceAnalysisClient
     private let engine: any CallEngine
     private var durationTimer: AnyCancellable?
     private var analysisTimer: AnyCancellable?
     private var incomingRingTimer: AnyCancellable?
+    private var voiceAnalysisTask: Task<Void, Never>?
     private var accumulatedAnalysisTime: TimeInterval = 0
-    private let analysisThreshold: TimeInterval = 15
+    private var accumulatedSpeechTime: TimeInterval = 0
+    private var hasCompletedVoiceAnalysis = false
+    private let analysisThreshold: TimeInterval = 10
+    private let speechLevelThreshold: Float = 0.015
     private var previousVerificationStatus: CallVerificationStatus?
 
     var callerName: String {
@@ -100,15 +107,18 @@ final class CallManager: ObservableObject {
         signalingClient: (any SignalingClient)? = nil,
         audioSessionManager: AudioSessionManager? = nil,
         localAudioStreamManager: LocalAudioStreamManager? = nil,
+        voiceAnalysisClient: (any VoiceAnalysisClient)? = nil,
         engine: (any CallEngine)? = nil
     ) {
         let resolvedSignalingClient = signalingClient ?? MockSignalingClient()
         let resolvedAudioSessionManager = audioSessionManager ?? AudioSessionManager()
         let resolvedLocalAudioStreamManager = localAudioStreamManager ?? LocalAudioStreamManager()
+        let resolvedVoiceAnalysisClient = voiceAnalysisClient ?? DemoVoiceAnalysisClient()
 
         self.signalingClient = resolvedSignalingClient
         self.audioSessionManager = resolvedAudioSessionManager
         self.localAudioStreamManager = resolvedLocalAudioStreamManager
+        self.voiceAnalysisClient = resolvedVoiceAnalysisClient
         self.engine = engine ?? Self.makeEngine(
             mode: Self.engineMode,
             signalingClient: resolvedSignalingClient,
@@ -255,6 +265,11 @@ final class CallManager: ObservableObject {
         phase = .connected
         callDuration = 0
         verificationStatus = .analyzing
+        voiceAnalysisDetail = "Listening for live speech..."
+        voiceAnalysisProgress = 0
+        accumulatedSpeechTime = 0
+        accumulatedAnalysisTime = 0
+        hasCompletedVoiceAnalysis = false
         log("Call connected")
         startDurationTimer()
         startAnalysisTimerIfNeeded()
@@ -284,11 +299,19 @@ final class CallManager: ObservableObject {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.accumulatedAnalysisTime += 1
+                let recentPeak = self.localAudioStreamManager.consumeRecentInputPeak()
 
-                if self.accumulatedAnalysisTime >= self.analysisThreshold {
-                    self.verificationStatus = .deepFakeDetected
-                    self.log("Analysis threshold reached: Deep fake warning triggered")
-                    self.stopAnalysisTimer()
+                if recentPeak >= self.speechLevelThreshold {
+                    self.accumulatedSpeechTime += 1
+                }
+
+                self.voiceAnalysisProgress = min(self.accumulatedSpeechTime / self.analysisThreshold, 1)
+                self.voiceAnalysisDetail = self.voiceAnalysisProgress < 1
+                    ? "Keep speaking... \(Int(self.accumulatedSpeechTime))/\(Int(self.analysisThreshold))s captured • level \(Int(recentPeak * 100))%"
+                    : "Running AI voice check..."
+
+                if self.accumulatedSpeechTime >= self.analysisThreshold, !self.hasCompletedVoiceAnalysis {
+                    self.runVoiceAnalysis()
                 }
             }
     }
@@ -298,10 +321,61 @@ final class CallManager: ObservableObject {
         analysisTimer = nil
     }
 
+    private func runVoiceAnalysis() {
+        guard !hasCompletedVoiceAnalysis else { return }
+
+        hasCompletedVoiceAnalysis = true
+        voiceAnalysisDetail = "Running AI voice check..."
+        log("Voice analysis threshold reached: running analyzer")
+
+        let recordingURL = localAudioStreamManager.lastRecordingURL
+        let speechDuration = accumulatedSpeechTime
+        voiceAnalysisTask?.cancel()
+        voiceAnalysisTask = Task { [voiceAnalysisClient] in
+            do {
+                let result = try await voiceAnalysisClient.analyzeSpeechSample(
+                    recordingURL: recordingURL,
+                    speechDuration: speechDuration
+                )
+
+                await MainActor.run {
+                    self.applyVoiceAnalysisResult(result)
+                }
+            } catch {
+                await MainActor.run {
+                    self.verificationStatus = .analyzing
+                    self.voiceAnalysisDetail = "Voice check failed: \(error.localizedDescription)"
+                    self.hasCompletedVoiceAnalysis = false
+                    self.log("Voice analysis failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    private func applyVoiceAnalysisResult(_ result: VoiceAnalysisResult) {
+        switch result.verdict {
+        case .human:
+            verificationStatus = .voiceVerified
+            voiceAnalysisDetail = "Human voice detected • \(Int(result.confidence * 100))% confidence"
+            log("Voice analysis result: human (\(result.detail))")
+        case .aiGenerated:
+            verificationStatus = .deepFakeDetected
+            voiceAnalysisDetail = "AI-generated voice suspected • \(Int(result.confidence * 100))% confidence"
+            log("Voice analysis result: AI generated (\(result.detail))")
+        case .inconclusive:
+            verificationStatus = .analyzing
+            voiceAnalysisDetail = "Inconclusive. Keep speaking."
+            hasCompletedVoiceAnalysis = false
+            log("Voice analysis result: inconclusive (\(result.detail))")
+        }
+    }
+
     private func resetCallSession() {
         stopIncomingRinging()
         stopDurationTimer()
         stopAnalysisTimer()
+        voiceAnalysisTask?.cancel()
+        voiceAnalysisTask = nil
         localAudioStreamManager.stopStreaming()
         audioSessionManager.deactivateAudioSession()
         activeCall = nil
@@ -314,6 +388,10 @@ final class CallManager: ObservableObject {
         isRingingOut = false
         isIncomingRinging = false
         accumulatedAnalysisTime = 0
+        accumulatedSpeechTime = 0
+        hasCompletedVoiceAnalysis = false
+        voiceAnalysisProgress = 0
+        voiceAnalysisDetail = "Listening for live speech..."
         previousVerificationStatus = nil
         log("Call session reset")
     }
