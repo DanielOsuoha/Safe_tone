@@ -7,10 +7,7 @@
 		<string>voip</string>
 		<string>processing</string>
 		<string>audio</string>
+		<string>push-to-talk</string>
 	</array>
-	<key>NSContactsUsageDescription</key>
-	<string>SafeTone needs access to contacts to display caller information.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>SafeTone needs access to the microphone for voice calls.</string>
 </dict>
 </plist>

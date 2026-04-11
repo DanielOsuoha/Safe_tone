@@ -133,7 +133,7 @@ final class CallManager: ObservableObject {
             return WebRTCCallEngine(
                 signalingClient: signalingClient,
                 audioSessionManager: audioSessionManager,
-                webRTCClient: NativeWebRTCClient()
+                webRTCClient: StubWebRTCClient()
             )
         }
     }
