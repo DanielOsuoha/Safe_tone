@@ -63,9 +63,11 @@ final class CallManager: ObservableObject {
     private var voiceAnalysisTask: Task<Void, Never>?
     private var accumulatedAnalysisTime: TimeInterval = 0
     private var accumulatedSpeechTime: TimeInterval = 0
+    private var ambientLevel: Float?
     private var hasCompletedVoiceAnalysis = false
     private let analysisThreshold: TimeInterval = 10
-    private let speechLevelThreshold: Float = 0.015
+    private let minimumSpeechLevel: Float = 0.06
+    private let speechLevelMargin: Float = 0.05
     private var previousVerificationStatus: CallVerificationStatus?
 
     var callerName: String {
@@ -269,6 +271,7 @@ final class CallManager: ObservableObject {
         voiceAnalysisProgress = 0
         accumulatedSpeechTime = 0
         accumulatedAnalysisTime = 0
+        ambientLevel = nil
         hasCompletedVoiceAnalysis = false
         log("Call connected")
         startDurationTimer()
@@ -299,15 +302,29 @@ final class CallManager: ObservableObject {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.accumulatedAnalysisTime += 1
-                let recentPeak = self.localAudioStreamManager.consumeRecentInputPeak()
+                let recentPeak = max(
+                    self.localAudioStreamManager.consumeRecentInputPeak(),
+                    self.localAudioStreamManager.inputLevel
+                )
+                let levelPercent = Int(recentPeak * 100)
 
-                if recentPeak >= self.speechLevelThreshold {
+                if self.accumulatedAnalysisTime <= 2 {
+                    self.ambientLevel = max(self.ambientLevel ?? 0, recentPeak)
+                    self.voiceAnalysisProgress = 0
+                    self.voiceAnalysisDetail = "Calibrating room noise... level \(levelPercent)%"
+                    return
+                }
+
+                let threshold = max(self.minimumSpeechLevel, (self.ambientLevel ?? 0) + self.speechLevelMargin)
+                let isSpeechLike = recentPeak >= threshold
+
+                if isSpeechLike {
                     self.accumulatedSpeechTime += 1
                 }
 
                 self.voiceAnalysisProgress = min(self.accumulatedSpeechTime / self.analysisThreshold, 1)
                 self.voiceAnalysisDetail = self.voiceAnalysisProgress < 1
-                    ? "Keep speaking... \(Int(self.accumulatedSpeechTime))/\(Int(self.analysisThreshold))s captured • level \(Int(recentPeak * 100))%"
+                    ? "Keep speaking... \(Int(self.accumulatedSpeechTime))/\(Int(self.analysisThreshold))s captured • level \(levelPercent)%"
                     : "Running AI voice check..."
 
                 if self.accumulatedSpeechTime >= self.analysisThreshold, !self.hasCompletedVoiceAnalysis {
@@ -389,6 +406,7 @@ final class CallManager: ObservableObject {
         isIncomingRinging = false
         accumulatedAnalysisTime = 0
         accumulatedSpeechTime = 0
+        ambientLevel = nil
         hasCompletedVoiceAnalysis = false
         voiceAnalysisProgress = 0
         voiceAnalysisDetail = "Listening for live speech..."

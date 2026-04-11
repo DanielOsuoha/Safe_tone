@@ -127,6 +127,11 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
         }
 
         do {
+            try audioSession.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: [.allowBluetoothHFP, .defaultToSpeaker]
+            )
             try audioSession.setActive(true, options: [])
         } catch {
             log("Failed to activate audio session for local streaming: \(error.localizedDescription)")
@@ -147,8 +152,7 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
                     }
                 }
 
-                let rms = Self.calculateRMS(from: buffer)
-                let normalized = min(max(rms * 8, 0), 1)
+                let normalized = Self.calculateSignalLevel(from: buffer)
 
                 DispatchQueue.main.async {
                     self?.inputLevel = normalized
@@ -191,7 +195,7 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
         }
     }
 
-    private static func calculateRMS(from buffer: AVAudioPCMBuffer) -> Float {
+    private static func calculateSignalLevel(from buffer: AVAudioPCMBuffer) -> Float {
         guard let channelData = buffer.floatChannelData else { return 0 }
 
         let channel = channelData[0]
@@ -199,8 +203,11 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
         guard frameCount > 0 else { return 0 }
 
         var rms: Float = 0
+        var peak: Float = 0
         vDSP_rmsqv(channel, 1, &rms, vDSP_Length(frameCount))
-        return rms
+        vDSP_maxmgv(channel, 1, &peak, vDSP_Length(frameCount))
+
+        return min(max((rms * 28) + (peak * 2), 0), 1)
     }
 
     private func log(_ message: String) {

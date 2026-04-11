@@ -75,8 +75,41 @@ struct RecentsScreen: View {
             // Demo Call Button (bottom right corner)
             VStack {
                 Spacer()
-                HStack {
+                HStack(alignment: .center, spacing: 12) {
+                    Button {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
+
+                        if callManager.localAudioStreamManager.isPlayingRecording {
+                            callManager.localAudioStreamManager.stopPlayback()
+                        } else {
+                            callManager.localAudioStreamManager.playLastRecording()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: callManager.localAudioStreamManager.isPlayingRecording ? "stop.fill" : "play.fill")
+                            Text(callManager.localAudioStreamManager.isPlayingRecording ? "Stop" : "Play Recording")
+                        }
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(callManager.localAudioStreamManager.hasRecording ? 0.16 : 0.08))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.blue.opacity(callManager.localAudioStreamManager.hasRecording ? 0.65 : 0.25), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!callManager.localAudioStreamManager.hasRecording)
+                    .opacity(callManager.localAudioStreamManager.hasRecording ? 1 : 0.45)
+                    .padding(.leading, 24)
+
                     Spacer()
+
                     Button {
                         let generator = UIImpactFeedbackGenerator(style: .medium)
                         generator.impactOccurred()
@@ -94,8 +127,8 @@ struct RecentsScreen: View {
                     .buttonStyle(.plain)
                     .opacity(0.8)
                     .padding(.trailing, 24)
-                    .padding(.bottom, 40)
                 }
+                .padding(.bottom, 40)
             }
         }
     }

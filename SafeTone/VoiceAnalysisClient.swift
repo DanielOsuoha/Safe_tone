@@ -21,6 +21,7 @@ struct VoiceAnalysisResult: Equatable {
 
 protocol VoiceAnalysisClient: Sendable {
     func analyzeSpeechSample(recordingURL: URL?, speechDuration: TimeInterval) async throws -> VoiceAnalysisResult
+    // when we get the model, run it on the audio or upload audio to model API
 }
 
 struct DemoVoiceAnalysisClient: VoiceAnalysisClient {
