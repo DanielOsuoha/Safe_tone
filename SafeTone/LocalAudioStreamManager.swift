@@ -63,9 +63,23 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
     func stopStreaming() {
         guard engine.isRunning || isStreaming else { return }
 
+        finishRecording()
+        log("Stopped local audio stream")
+    }
+
+    func finalizeRecordingForAnalysis() -> URL? {
+        finishRecording()
+        return recordingURL
+    }
+
+    private func finishRecording() {
+        guard engine.isRunning || isStreaming || recordingFile != nil else { return }
+
         let inputNode = engine.inputNode
         inputNode.removeTap(onBus: 0)
-        engine.stop()
+        if engine.isRunning {
+            engine.stop()
+        }
         recordingFile = nil
 
         let recorded = recordingURL != nil
@@ -76,8 +90,6 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
             self.recentInputPeak = 0
             self.hasRecording = recorded
         }
-
-        log("Stopped local audio stream")
     }
 
     func playLastRecording() {
@@ -129,8 +141,8 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
         do {
             try audioSession.setCategory(
                 .playAndRecord,
-                mode: .voiceChat,
-                options: [.allowBluetoothHFP, .defaultToSpeaker]
+                mode: .measurement,
+                options: [.defaultToSpeaker]
             )
             try audioSession.setActive(true, options: [])
         } catch {
@@ -178,14 +190,22 @@ final class LocalAudioStreamManager: NSObject, ObservableObject {
 
     private func prepareRecordingFile(for format: AVAudioFormat) {
         let recordingsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
-        let url = recordingsDirectory.appendingPathComponent("SafeTone-LastCallRecording.caf")
+        let url = recordingsDirectory.appendingPathComponent("SafeTone-LastCallRecording.wav")
+        let settings: [String: Any] = [
+            AVFormatIDKey: kAudioFormatLinearPCM,
+            AVSampleRateKey: format.sampleRate,
+            AVNumberOfChannelsKey: Int(format.channelCount),
+            AVLinearPCMBitDepthKey: 16,
+            AVLinearPCMIsFloatKey: false,
+            AVLinearPCMIsBigEndianKey: false
+        ]
 
         do {
             if FileManager.default.fileExists(atPath: url.path) {
                 try FileManager.default.removeItem(at: url)
             }
 
-            recordingFile = try AVAudioFile(forWriting: url, settings: format.settings)
+            recordingFile = try AVAudioFile(forWriting: url, settings: settings)
             recordingURL = url
             log("Prepared local recording at path: \(url.path)")
         } catch {

@@ -39,7 +39,16 @@ final class CallManager: ObservableObject {
         let direction: CallDirection
     }
 
+    struct RecentCallSnapshot: Equatable, Identifiable {
+        let id: UUID
+        let handle: String
+        let direction: CallDirection
+        let timestamp: Date
+        let wasMissed: Bool
+    }
+
     @Published private(set) var activeCall: ActiveCall?
+    @Published private(set) var mostRecentCall: RecentCallSnapshot?
     @Published private(set) var phase: CallPhase = .idle
     @Published private(set) var callDuration: Int = 0
     @Published var verificationStatus: CallVerificationStatus = .analyzing
@@ -63,12 +72,12 @@ final class CallManager: ObservableObject {
     private var voiceAnalysisTask: Task<Void, Never>?
     private var accumulatedAnalysisTime: TimeInterval = 0
     private var accumulatedSpeechTime: TimeInterval = 0
-    private var ambientLevel: Float?
     private var hasCompletedVoiceAnalysis = false
-    private let analysisThreshold: TimeInterval = 10
-    private let minimumSpeechLevel: Float = 0.06
-    private let speechLevelMargin: Float = 0.05
+    private let analysisThreshold: TimeInterval = 15
+    private let minimumSpeechLevel: Float = 0.035
+    private let fallbackStartAfter: TimeInterval = 6
     private var previousVerificationStatus: CallVerificationStatus?
+    private var currentCallConnected = false
 
     var callerName: String {
         activeCall?.displayName ?? "Unknown Caller"
@@ -115,7 +124,7 @@ final class CallManager: ObservableObject {
         let resolvedSignalingClient = signalingClient ?? MockSignalingClient()
         let resolvedAudioSessionManager = audioSessionManager ?? AudioSessionManager()
         let resolvedLocalAudioStreamManager = localAudioStreamManager ?? LocalAudioStreamManager()
-        let resolvedVoiceAnalysisClient = voiceAnalysisClient ?? DemoVoiceAnalysisClient()
+        let resolvedVoiceAnalysisClient = voiceAnalysisClient ?? VoiceAnalysisClientFactory.makeDefault()
 
         self.signalingClient = resolvedSignalingClient
         self.audioSessionManager = resolvedAudioSessionManager
@@ -151,21 +160,23 @@ final class CallManager: ObservableObject {
     }
 
     func startOutgoingCall(to handle: String, displayName: String? = nil) {
-        let name = (displayName?.isEmpty == false ? displayName : handle) ?? handle
+        let name = Self.resolvedDisplayName(handle: handle, displayName: displayName)
         resetCallSession()
         let call = ActiveCall(id: UUID(), displayName: name, handle: handle, direction: .outgoing)
         activeCall = call
         phase = .outgoing
+        currentCallConnected = false
         log("Starting outgoing call to \(name) [\(handle)]")
         engine.startOutgoingCall(callID: call.id, handle: handle, displayName: name)
     }
 
     func receiveIncomingCall(id: UUID = UUID(), handle: String, displayName: String? = nil) {
-        let name = (displayName?.isEmpty == false ? displayName : handle) ?? handle
+        let name = Self.resolvedDisplayName(handle: handle, displayName: displayName)
         resetCallSession()
         signalingClient.connect()
         activeCall = ActiveCall(id: id, displayName: name, handle: handle, direction: .incoming)
         phase = .incoming
+        currentCallConnected = false
         log("Incoming call received from \(name) [\(handle)]")
         startIncomingRinging()
     }
@@ -198,6 +209,7 @@ final class CallManager: ObservableObject {
         stopAnalysisTimer()
         localAudioStreamManager.stopStreaming()
         audioSessionManager.deactivateAudioSession()
+        recordRecentCallIfNeeded()
         phase = .ended
         showPauseMessage = false
 
@@ -271,8 +283,8 @@ final class CallManager: ObservableObject {
         voiceAnalysisProgress = 0
         accumulatedSpeechTime = 0
         accumulatedAnalysisTime = 0
-        ambientLevel = nil
         hasCompletedVoiceAnalysis = false
+        currentCallConnected = true
         log("Call connected")
         startDurationTimer()
         startAnalysisTimerIfNeeded()
@@ -307,18 +319,10 @@ final class CallManager: ObservableObject {
                     self.localAudioStreamManager.inputLevel
                 )
                 let levelPercent = Int(recentPeak * 100)
+                let isSpeechLike = recentPeak >= self.minimumSpeechLevel
+                let shouldUseDemoFallback = self.accumulatedAnalysisTime >= self.fallbackStartAfter && self.accumulatedSpeechTime == 0
 
-                if self.accumulatedAnalysisTime <= 2 {
-                    self.ambientLevel = max(self.ambientLevel ?? 0, recentPeak)
-                    self.voiceAnalysisProgress = 0
-                    self.voiceAnalysisDetail = "Calibrating room noise... level \(levelPercent)%"
-                    return
-                }
-
-                let threshold = max(self.minimumSpeechLevel, (self.ambientLevel ?? 0) + self.speechLevelMargin)
-                let isSpeechLike = recentPeak >= threshold
-
-                if isSpeechLike {
+                if isSpeechLike || shouldUseDemoFallback {
                     self.accumulatedSpeechTime += 1
                 }
 
@@ -345,7 +349,7 @@ final class CallManager: ObservableObject {
         voiceAnalysisDetail = "Running AI voice check..."
         log("Voice analysis threshold reached: running analyzer")
 
-        let recordingURL = localAudioStreamManager.lastRecordingURL
+        let recordingURL = localAudioStreamManager.finalizeRecordingForAnalysis() ?? localAudioStreamManager.lastRecordingURL
         let speechDuration = accumulatedSpeechTime
         voiceAnalysisTask?.cancel()
         voiceAnalysisTask = Task { [voiceAnalysisClient] in
@@ -362,7 +366,7 @@ final class CallManager: ObservableObject {
                 await MainActor.run {
                     self.verificationStatus = .analyzing
                     self.voiceAnalysisDetail = "Voice check failed: \(error.localizedDescription)"
-                    self.hasCompletedVoiceAnalysis = false
+                    self.hasCompletedVoiceAnalysis = true
                     self.log("Voice analysis failed: \(error.localizedDescription)")
                 }
             }
@@ -376,13 +380,14 @@ final class CallManager: ObservableObject {
             voiceAnalysisDetail = "Human voice detected • \(Int(result.confidence * 100))% confidence"
             log("Voice analysis result: human (\(result.detail))")
         case .aiGenerated:
-            verificationStatus = .deepFakeDetected
-            voiceAnalysisDetail = "AI-generated voice suspected • \(Int(result.confidence * 100))% confidence"
-            log("Voice analysis result: AI generated (\(result.detail))")
+            verificationStatus = .suspiciousAudioDetected
+            voiceAnalysisDetail = "Possible manipulation or replay detected • \(Int(result.confidence * 100))% confidence"
+            log("Voice analysis result: suspicious audio (\(result.detail))")
         case .inconclusive:
             verificationStatus = .analyzing
-            voiceAnalysisDetail = "Inconclusive. Keep speaking."
-            hasCompletedVoiceAnalysis = false
+            voiceAnalysisDetail = "Voice check inconclusive"
+            hasCompletedVoiceAnalysis = true
+            stopAnalysisTimer()
             log("Voice analysis result: inconclusive (\(result.detail))")
         }
     }
@@ -406,12 +411,24 @@ final class CallManager: ObservableObject {
         isIncomingRinging = false
         accumulatedAnalysisTime = 0
         accumulatedSpeechTime = 0
-        ambientLevel = nil
         hasCompletedVoiceAnalysis = false
         voiceAnalysisProgress = 0
         voiceAnalysisDetail = "Listening for live speech..."
         previousVerificationStatus = nil
+        currentCallConnected = false
         log("Call session reset")
+    }
+
+    private func recordRecentCallIfNeeded() {
+        guard let call = activeCall else { return }
+
+        mostRecentCall = RecentCallSnapshot(
+            id: call.id,
+            handle: call.handle,
+            direction: call.direction,
+            timestamp: Date(),
+            wasMissed: call.direction == .incoming && !currentCallConnected
+        )
     }
 
     private func startIncomingRinging() {
@@ -439,6 +456,14 @@ final class CallManager: ObservableObject {
 
     private func log(_ message: String) {
         print("[CallManager] \(message)")
+    }
+
+    private static func resolvedDisplayName(handle: String, displayName: String?) -> String {
+        guard let displayName, !displayName.isEmpty else {
+            return ContactDirectory.displayName(for: handle)
+        }
+
+        return displayName
     }
 
     private func withAnimationState(_ updates: () -> Void) {

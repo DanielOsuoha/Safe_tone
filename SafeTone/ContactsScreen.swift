@@ -14,30 +14,40 @@ struct ContactRow: Identifiable {
     let initials: String
 }
 
-private let allContacts: [ContactRow] = [
-    ContactRow(name: "Alice Chen", subtitle: "+1 555 0101", initials: "AC"),
-    ContactRow(name: "Amanda Rodriguez", subtitle: "+1 555 0109", initials: "AR"),
-    ContactRow(name: "Andrew Thompson", subtitle: "+1 555 0110", initials: "AT"),
-    ContactRow(name: "Bob Martinez", subtitle: "+1 555 0102", initials: "BM"),
-    ContactRow(name: "Carol Williams", subtitle: "+1 555 0103", initials: "CW"),
-    ContactRow(name: "Chris Anderson", subtitle: "+1 555 0111", initials: "CA"),
-    ContactRow(name: "Catherine Davis", subtitle: "+1 555 0112", initials: "CD"),
-    ContactRow(name: "David Kim", subtitle: "+1 555 0104", initials: "DK"),
-    ContactRow(name: "Daniel Brown", subtitle: "+1 555 0113", initials: "DB"),
-    ContactRow(name: "Diana Wilson", subtitle: "+1 555 0114", initials: "DW"),
-    ContactRow(name: "Eva Johnson", subtitle: "+1 555 0105", initials: "EJ"),
-    ContactRow(name: "Frank Lee", subtitle: "+1 555 0106", initials: "FL"),
-    ContactRow(name: "Grace Park", subtitle: "+1 555 0107", initials: "GP"),
-    ContactRow(name: "Henry Wong", subtitle: "+1 555 0108", initials: "HW"),
-]
+enum ContactDirectory {
+    static let allContacts: [ContactRow] = [
+        ContactRow(name: "Alice Chen", subtitle: "+1 555 0101", initials: "AC"),
+        ContactRow(name: "Amanda Rodriguez", subtitle: "+1 555 0109", initials: "AR"),
+        ContactRow(name: "Andrew Thompson", subtitle: "+1 555 0110", initials: "AT"),
+        ContactRow(name: "Bob Martinez", subtitle: "+1 555 0102", initials: "BM"),
+        ContactRow(name: "Carol Williams", subtitle: "+1 555 0103", initials: "CW"),
+        ContactRow(name: "Chris Anderson", subtitle: "+1 555 0111", initials: "CA"),
+        ContactRow(name: "Catherine Davis", subtitle: "+1 555 0112", initials: "CD"),
+        ContactRow(name: "David Kim", subtitle: "+1 555 0104", initials: "DK"),
+        ContactRow(name: "Daniel Brown", subtitle: "+1 555 0113", initials: "DB"),
+        ContactRow(name: "Diana Wilson", subtitle: "+1 555 0114", initials: "DW"),
+        ContactRow(name: "Eva Johnson", subtitle: "+1 555 0105", initials: "EJ"),
+        ContactRow(name: "Frank Lee", subtitle: "+1 555 0106", initials: "FL"),
+        ContactRow(name: "Grace Park", subtitle: "+1 555 0107", initials: "GP"),
+        ContactRow(name: "Henry Wong", subtitle: "+1 555 0108", initials: "HW"),
+    ]
+
+    static func displayName(for handle: String) -> String {
+        allContacts.first { normalizedPhone($0.subtitle) == normalizedPhone(handle) }?.name ?? handle
+    }
+
+    private static func normalizedPhone(_ value: String) -> String {
+        value.filter(\.isNumber)
+    }
+}
 
 struct ContactsScreen: View {
     @State private var searchText: String = ""
     @EnvironmentObject private var callManager: CallManager
 
     private var filteredContacts: [ContactRow] {
-        if searchText.isEmpty { return allContacts }
-        return allContacts.filter {
+        if searchText.isEmpty { return ContactDirectory.allContacts }
+        return ContactDirectory.allContacts.filter {
             $0.name.localizedCaseInsensitiveContains(searchText) ||
             $0.subtitle.contains(searchText)
         }

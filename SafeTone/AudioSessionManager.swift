@@ -17,8 +17,8 @@ final class AudioSessionManager {
     func activateCallAudio() {
         configureSession(
             category: .playAndRecord,
-            mode: .voiceChat,
-            options: [.allowBluetoothHFP, .defaultToSpeaker],
+            mode: .measurement,
+            options: [.defaultToSpeaker],
             context: "call audio"
         )
     }

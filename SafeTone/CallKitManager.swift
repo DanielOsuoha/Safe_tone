@@ -115,7 +115,7 @@ extension CallKitManager: CXProviderDelegate {
     private func configureAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [])
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [])
             try audioSession.setActive(true)
         } catch {
             print("Failed to configure audio session: \(error.localizedDescription)")

@@ -38,6 +38,35 @@ private let mockRecentSections: [RecentSection] = [
 
 struct RecentsScreen: View {
     @EnvironmentObject private var callManager: CallManager
+
+    private var recentSections: [RecentSection] {
+        guard let mostRecentCall = callManager.mostRecentCall else {
+            return mockRecentSections
+        }
+
+        var sections = mockRecentSections
+        let latestItem = RecentItem(
+            name: ContactDirectory.displayName(for: mostRecentCall.handle),
+            callType: mostRecentCall.direction == .incoming ? "incoming" : "outgoing",
+            timestamp: Self.timestampFormatter.string(from: mostRecentCall.timestamp),
+            isMissed: mostRecentCall.wasMissed
+        )
+
+        if let todayIndex = sections.firstIndex(where: { $0.title == "Today" }) {
+            let existingItems = sections[todayIndex].items.filter { $0.name != latestItem.name || $0.timestamp != latestItem.timestamp }
+            sections[todayIndex] = RecentSection(title: "Today", items: [latestItem] + existingItems)
+        } else {
+            sections.insert(RecentSection(title: "Today", items: [latestItem]), at: 0)
+        }
+
+        return sections
+    }
+
+    private static let timestampFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
     
     var body: some View {
         ZStack {
@@ -51,7 +80,7 @@ struct RecentsScreen: View {
                     .padding(.bottom, 16)
                 
                 List {
-                    ForEach(mockRecentSections) { section in
+                    ForEach(recentSections) { section in
                         Section {
                             ForEach(section.items) { item in
                                 recentRow(item)
@@ -113,7 +142,7 @@ struct RecentsScreen: View {
                     Button {
                         let generator = UIImpactFeedbackGenerator(style: .medium)
                         generator.impactOccurred()
-                        callManager.receiveIncomingCall(handle: "Alice Chen", displayName: "Alice Chen")
+                        callManager.receiveIncomingCall(handle: "+1 555 0101")
                     } label: {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 30))

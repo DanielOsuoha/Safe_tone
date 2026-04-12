@@ -9,17 +9,15 @@ import SwiftUI
 
 nonisolated enum CallVerificationStatus: Sendable, Equatable {
     case voiceVerified
-    case aiDetected
     case analyzing
-    case deepFakeDetected
+    case suspiciousAudioDetected
     case analysisPaused
 
     nonisolated var text: String {
         switch self {
         case .voiceVerified: return "Voice Verified"
-        case .aiDetected: return "AI Detected"
         case .analyzing: return "Analyzing for scams..."
-        case .deepFakeDetected: return "Deep Fake Identified"
+        case .suspiciousAudioDetected: return "Suspicious Audio Detected"
         case .analysisPaused: return "Analysis Paused"
         }
     }
@@ -27,9 +25,8 @@ nonisolated enum CallVerificationStatus: Sendable, Equatable {
     nonisolated var color: Color {
         switch self {
         case .voiceVerified: return .blue
-        case .aiDetected: return .red
         case .analyzing: return .orange
-        case .deepFakeDetected: return .red
+        case .suspiciousAudioDetected: return .red
         case .analysisPaused: return .white.opacity(0.6)
         }
     }
@@ -37,9 +34,8 @@ nonisolated enum CallVerificationStatus: Sendable, Equatable {
     nonisolated var shadowColor: Color {
         switch self {
         case .voiceVerified: return .blue
-        case .aiDetected: return .red
         case .analyzing: return .orange
-        case .deepFakeDetected: return .red
+        case .suspiciousAudioDetected: return .red
         case .analysisPaused: return .white.opacity(0.3)
         }
     }
@@ -94,8 +90,8 @@ struct InCallScreen: View {
             }
         }
         .onChange(of: callManager.verificationStatus) { _, newValue in
-            if newValue == .deepFakeDetected {
-                triggerDeepFakeWarning()
+            if newValue == .suspiciousAudioDetected {
+                triggerSuspiciousAudioWarning()
             } else {
                 warningPulse = false
                 warningBlink = true
@@ -123,9 +119,9 @@ struct InCallScreen: View {
                 .frame(width: 120, height: 120)
                 .cornerRadius(35)
                 .shadow(color: callManager.securityStatusColor.shadowColor.opacity(0.6), radius: 40, x: 0, y: 0)
-                .scaleEffect(callManager.verificationStatus == .deepFakeDetected && warningPulse ? 1.1 : 1.0)
+                .scaleEffect(callManager.verificationStatus == .suspiciousAudioDetected && warningPulse ? 1.1 : 1.0)
                 .animation(
-                    callManager.verificationStatus == .deepFakeDetected ?
+                    callManager.verificationStatus == .suspiciousAudioDetected ?
                         .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
                     value: warningPulse
                 )
@@ -149,10 +145,10 @@ struct InCallScreen: View {
             Text(callManager.securityStatusText)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(callManager.securityStatusColor.color)
-                .scaleEffect(callManager.verificationStatus == .deepFakeDetected && warningPulse ? 1.15 : 1.0)
-                .opacity(callManager.verificationStatus == .deepFakeDetected ? (warningBlink ? 1.0 : 0.4) : 1.0)
+                .scaleEffect(callManager.verificationStatus == .suspiciousAudioDetected && warningPulse ? 1.15 : 1.0)
+                .opacity(callManager.verificationStatus == .suspiciousAudioDetected ? (warningBlink ? 1.0 : 0.4) : 1.0)
                 .animation(
-                    callManager.verificationStatus == .deepFakeDetected ?
+                    callManager.verificationStatus == .suspiciousAudioDetected ?
                         .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default,
                     value: warningPulse
                 )
@@ -300,11 +296,11 @@ struct InCallScreen: View {
         .buttonStyle(.plain)
     }
 
-    private func triggerDeepFakeWarning() {
+    private func triggerSuspiciousAudioWarning() {
         warningPulse = true
 
         Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { timer in
-            if callManager.verificationStatus == .deepFakeDetected {
+            if callManager.verificationStatus == .suspiciousAudioDetected {
                 warningBlink.toggle()
             } else {
                 timer.invalidate()
