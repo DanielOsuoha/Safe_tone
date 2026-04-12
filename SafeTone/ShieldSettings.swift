@@ -42,6 +42,14 @@ struct ShieldSettings: View {
                 socialProofCard
                 
                 Spacer().frame(height: 24)
+
+                protectionStatusCard
+
+                Spacer().frame(height: 14)
+
+                protectionExplanationCard
+
+                Spacer().frame(height: 20)
                 
                 serviceStatusSection
                 
@@ -143,6 +151,96 @@ struct ShieldSettings: View {
             statusRow(text: "Secure Bank Monitoring")
         }
         .padding(.horizontal, 24)
+    }
+
+    private var protectionStatusCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Protection Status")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+
+            protectionStatusRow(
+                icon: "waveform",
+                title: "Voice analysis",
+                value: "Active",
+                tint: .blue
+            )
+
+            protectionStatusRow(
+                icon: isRealityDefenderConfigured ? "checkmark.shield.fill" : "exclamationmark.triangle.fill",
+                title: "Reality Defender",
+                value: isRealityDefenderConfigured ? "Connected" : "Demo mode",
+                tint: isRealityDefenderConfigured ? .blue : .orange
+            )
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 22)
+                .fill(Color.white.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(Color.blue.opacity(0.35), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 8)
+    }
+
+    private var protectionExplanationCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.blue.opacity(0.9))
+
+            Text("SafeTone flags audio that may be AI-generated, replayed, edited, or otherwise suspicious so you can verify before trusting the caller.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white.opacity(0.72))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.10), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 8)
+    }
+
+    private func protectionStatusRow(icon: String, title: String, value: String, tint: Color) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 24, height: 24)
+
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.white.opacity(0.82))
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tint)
+        }
+    }
+
+    private var isRealityDefenderConfigured: Bool {
+        if let apiKey = Bundle.main.object(forInfoDictionaryKey: "REALITY_DEFENDER_API_KEY") as? String,
+           !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return true
+        }
+
+        if let apiKey = ProcessInfo.processInfo.environment["REALITY_DEFENDER_API_KEY"],
+           !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return true
+        }
+
+        return false
     }
     
     private func statusRow(text: String) -> some View {
